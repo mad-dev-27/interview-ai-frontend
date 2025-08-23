@@ -4,12 +4,16 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Header } from "./components/Layout/Header";
+import { Sidebar } from "./components/Dashboard/Sidebar";
+import { DashboardContent } from "./components/Dashboard/DashboardContent";
 import { AuthForm } from "./components/Auth/AuthForm";
 import { LandingPage } from "./components/Landing/LandingPage";
+import { MockInterviewSetup } from "./components/MockInterview/MockInterviewSetup";
 import { PreInterviewSetup } from "./components/Interview/PreInterviewSetup";
 import { InterviewInterface } from "./components/Interview/InterviewInterface";
 import { ResultsPage } from "./components/Results/ResultsPage";
@@ -31,6 +35,26 @@ import { ResultsPage } from "./components/Results/ResultsPage";
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
+  // Mock data for sidebar
+  const sidebarData = {
+    recentInterviews: 3,
+    freeInterviewsLeft: 1,
+    totalInterviews: 5,
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="flex flex-col lg:flex-row">
+        <Sidebar {...sidebarData} />
+        <DashboardContent />
+      </div>
+    </div>
+  );
+};
+
+// Interview Flow Component
+const InterviewFlow: React.FC = () => {
   const [currentView, setCurrentView] = React.useState<
     "setup" | "interview" | "results"
   >("setup");
@@ -41,6 +65,19 @@ const Dashboard: React.FC = () => {
     jobDescription: string;
     resume: File | null;
   } | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    // Check if we have data from mock interview setup
+    if (location.state?.jobDescription && location.state?.resume) {
+      setInterviewData({
+        jobDescription: location.state.jobDescription,
+        resume: location.state.resume
+      });
+      setCurrentView("interview");
+    }
+  }, [location.state]);
 
   const handleSetupComplete = (data: {
     jobDescription: string;
@@ -56,14 +93,11 @@ const Dashboard: React.FC = () => {
   };
 
   const handleRestart = () => {
-    setCurrentView("setup");
-    setInterviewResponses([]);
-    setInterviewData(null);
+    navigate('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
+    <div className="min-h-screen">
       {currentView === "setup" && (
         <PreInterviewSetup onComplete={handleSetupComplete} />
       )}
@@ -112,6 +146,12 @@ function AppContent() {
 
       {/* Auth Page - Public Route */}
       <Route path="/auth" element={<AuthForm />} />
+
+      {/* Mock Interview Setup - Public Route */}
+      <Route path="/mock-interview" element={<MockInterviewSetup />} />
+
+      {/* Interview Flow - Public Route */}
+      <Route path="/interview" element={<InterviewFlow />} />
 
       {/* Dashboard - Protected Route */}
       <Route
