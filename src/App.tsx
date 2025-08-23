@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -34,9 +35,29 @@ import { ResultsPage } from "./components/Results/ResultsPage";
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
+  // Mock data for sidebar
+  const sidebarData = {
+    recentInterviews: 3,
+    freeInterviewsLeft: 1,
+    totalInterviews: 5,
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="flex flex-col lg:flex-row">
+        <Sidebar {...sidebarData} />
+        <DashboardContent />
+      </div>
+    </div>
+  );
+};
+
+// Interview Flow Component
+const InterviewFlow: React.FC = () => {
   const [currentView, setCurrentView] = React.useState<
-    "dashboard" | "setup" | "interview" | "results"
-  >("dashboard");
+    "setup" | "interview" | "results"
+  >("setup");
   const [interviewResponses, setInterviewResponses] = React.useState<string[]>(
     []
   );
@@ -44,13 +65,19 @@ const Dashboard: React.FC = () => {
     jobDescription: string;
     resume: File | null;
   } | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Mock data for sidebar
-  const sidebarData = {
-    recentInterviews: 3,
-    freeInterviewsLeft: 1,
-    totalInterviews: 5,
-  };
+  React.useEffect(() => {
+    // Check if we have data from mock interview setup
+    if (location.state?.jobDescription && location.state?.resume) {
+      setInterviewData({
+        jobDescription: location.state.jobDescription,
+        resume: location.state.resume
+      });
+      setCurrentView("interview");
+    }
+  }, [location.state]);
 
   const handleSetupComplete = (data: {
     jobDescription: string;
@@ -66,18 +93,12 @@ const Dashboard: React.FC = () => {
   };
 
   const handleRestart = () => {
-    setCurrentView("dashboard");
-    setInterviewResponses([]);
-    setInterviewData(null);
+    navigate('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
-      <div className="flex">
-        <Sidebar {...sidebarData} />
-        {currentView === "dashboard" && <DashboardContent />}
-        {currentView === "setup" && (
+    <div className="min-h-screen">
+      {currentView === "setup" && (
         <PreInterviewSetup onComplete={handleSetupComplete} />
       )}
       {currentView === "interview" && (
@@ -95,7 +116,6 @@ const Dashboard: React.FC = () => {
           onRestart={handleRestart}
         />
       )}
-      </div>
     </div>
   );
 };
@@ -129,6 +149,9 @@ function AppContent() {
 
       {/* Mock Interview Setup - Public Route */}
       <Route path="/mock-interview" element={<MockInterviewSetup />} />
+
+      {/* Interview Flow - Public Route */}
+      <Route path="/interview" element={<InterviewFlow />} />
 
       {/* Dashboard - Protected Route */}
       <Route

@@ -44,14 +44,14 @@ export const DashboardContent: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 p-4 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto"
+        className="max-w-6xl mx-auto w-full"
       >
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Welcome to Your Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -59,7 +59,7 @@ export const DashboardContent: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -70,7 +70,7 @@ export const DashboardContent: React.FC = () => {
                 feature.primary ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
               }`}
             >
-              <div className="flex items-center space-x-4 mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                   feature.primary 
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600' 
@@ -81,7 +81,7 @@ export const DashboardContent: React.FC = () => {
                   }`} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -106,14 +106,14 @@ export const DashboardContent: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6"
+          className="mt-6 lg:mt-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-4 lg:p-6"
         >
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Quick Tips for Success
           </h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+              <div className="text-xl lg:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                 STAR
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -121,7 +121,7 @@ export const DashboardContent: React.FC = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+              <div className="text-xl lg:text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">
                 2-3 min
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -129,7 +129,7 @@ export const DashboardContent: React.FC = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+              <div className="text-xl lg:text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
                 Practice
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">

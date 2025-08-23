@@ -66,10 +66,9 @@ export const MockInterviewSetup: React.FC = () => {
       return;
     }
 
-    // Navigate to dashboard with interview data
-    navigate('/dashboard', { 
+    // Navigate to interview interface with data
+    navigate('/interview', { 
       state: { 
-        startInterview: true, 
         jobDescription: jobDescription.trim(), 
         resume 
       } 
