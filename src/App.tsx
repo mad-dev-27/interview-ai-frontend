@@ -80,7 +80,6 @@ const Dashboard: React.FC = () => {
         {currentView === "setup" && (
         <PreInterviewSetup onComplete={handleSetupComplete} />
       )}
-        {currentView === "interview" && (
       {currentView === "interview" && (
         <InterviewInterface
           onComplete={handleInterviewComplete}
