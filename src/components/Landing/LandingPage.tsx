@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import { Brain, Users, Award, TrendingUp, CheckCircle, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { PricingSection } from './PricingSection';
 
 export const LandingPage: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -197,55 +198,8 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Success Stories
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
-              Join thousands who've improved their interview skills
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className={`${
-                        i < testimonial.rating
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300 dark:text-gray-600'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  "{testimonial.content}"
-                </p>
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">
-                    {testimonial.name}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {testimonial.role}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">

@@ -8,8 +8,11 @@ import {
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Header } from "./components/Layout/Header";
+import { Sidebar } from "./components/Dashboard/Sidebar";
+import { DashboardContent } from "./components/Dashboard/DashboardContent";
 import { AuthForm } from "./components/Auth/AuthForm";
 import { LandingPage } from "./components/Landing/LandingPage";
+import { MockInterviewSetup } from "./components/MockInterview/MockInterviewSetup";
 import { PreInterviewSetup } from "./components/Interview/PreInterviewSetup";
 import { InterviewInterface } from "./components/Interview/InterviewInterface";
 import { ResultsPage } from "./components/Results/ResultsPage";
@@ -32,8 +35,8 @@ import { ResultsPage } from "./components/Results/ResultsPage";
 // Dashboard Component
 const Dashboard: React.FC = () => {
   const [currentView, setCurrentView] = React.useState<
-    "setup" | "interview" | "results"
-  >("setup");
+    "dashboard" | "setup" | "interview" | "results"
+  >("dashboard");
   const [interviewResponses, setInterviewResponses] = React.useState<string[]>(
     []
   );
@@ -41,6 +44,13 @@ const Dashboard: React.FC = () => {
     jobDescription: string;
     resume: File | null;
   } | null>(null);
+
+  // Mock data for sidebar
+  const sidebarData = {
+    recentInterviews: 3,
+    freeInterviewsLeft: 1,
+    totalInterviews: 5,
+  };
 
   const handleSetupComplete = (data: {
     jobDescription: string;
@@ -56,7 +66,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleRestart = () => {
-    setCurrentView("setup");
+    setCurrentView("dashboard");
     setInterviewResponses([]);
     setInterviewData(null);
   };
@@ -64,9 +74,13 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      {currentView === "setup" && (
+      <div className="flex">
+        <Sidebar {...sidebarData} />
+        {currentView === "dashboard" && <DashboardContent />}
+        {currentView === "setup" && (
         <PreInterviewSetup onComplete={handleSetupComplete} />
       )}
+        {currentView === "interview" && (
       {currentView === "interview" && (
         <InterviewInterface
           onComplete={handleInterviewComplete}
@@ -82,6 +96,7 @@ const Dashboard: React.FC = () => {
           onRestart={handleRestart}
         />
       )}
+      </div>
     </div>
   );
 };
@@ -112,6 +127,9 @@ function AppContent() {
 
       {/* Auth Page - Public Route */}
       <Route path="/auth" element={<AuthForm />} />
+
+      {/* Mock Interview Setup - Public Route */}
+      <Route path="/mock-interview" element={<MockInterviewSetup />} />
 
       {/* Dashboard - Protected Route */}
       <Route
