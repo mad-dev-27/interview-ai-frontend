@@ -44,11 +44,11 @@ export const DashboardContent: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 p-4 lg:p-8">
+    <div className="flex-1 min-h-screen p-4 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto w-full"
+        className="max-w-6xl mx-auto w-full h-full"
       >
         <div className="mb-8">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
