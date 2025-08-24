@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")!).render(
   <GoogleOAuthProvider
@@ -12,6 +13,7 @@ createRoot(document.getElementById("root")!).render(
   >
     <StrictMode>
       <App />
+      <Toaster expand={false} position="top-center" closeButton richColors />
     </StrictMode>
   </GoogleOAuthProvider>
 );
