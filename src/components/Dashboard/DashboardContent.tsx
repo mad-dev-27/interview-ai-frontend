@@ -1,50 +1,50 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Play, BookOpen, TrendingUp, Award } from 'lucide-react';
-import { Button } from '../ui/Button';
+import React from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Play, BookOpen, TrendingUp, Award } from "lucide-react";
+import { Button } from "../ui/Button";
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
 
   const handleStartInterview = () => {
-    navigate('/mock-interview');
+    navigate("/mock-interview");
   };
 
   const features = [
     {
       icon: Play,
-      title: 'Start Mock Interview',
-      description: 'Begin a new AI-powered interview session',
-      action: 'Start Now',
+      title: "Start Mock Interview",
+      description: "Begin a new AI-powered interview session",
+      action: "Start Now",
       onClick: handleStartInterview,
       primary: true,
     },
     {
       icon: BookOpen,
-      title: 'Interview History',
-      description: 'Review your past interview performances',
-      action: 'View History',
+      title: "Interview History",
+      description: "Review your past interview performances",
+      action: "View History",
       onClick: () => {},
     },
     {
       icon: TrendingUp,
-      title: 'Performance Analytics',
-      description: 'Track your improvement over time',
-      action: 'View Analytics',
+      title: "Performance Analytics",
+      description: "Track your improvement over time",
+      action: "View Analytics",
       onClick: () => {},
     },
     {
       icon: Award,
-      title: 'Skill Assessment',
-      description: 'Evaluate your technical and soft skills',
-      action: 'Take Assessment',
+      title: "Skill Assessment",
+      description: "Evaluate your technical and soft skills",
+      action: "Take Assessment",
       onClick: () => {},
     },
   ];
 
   return (
-    <div className="flex-1 p-4 lg:p-8">
+    <div className=" flex-1 p-4 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -67,18 +67,24 @@ export const DashboardContent: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 ${
-                feature.primary ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+                feature.primary ? "ring-2 ring-blue-500 ring-opacity-50" : ""
               }`}
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  feature.primary 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600' 
-                    : 'bg-gray-100 dark:bg-gray-700'
-                }`}>
-                  <feature.icon className={`w-6 h-6 ${
-                    feature.primary ? 'text-white' : 'text-gray-600 dark:text-gray-400'
-                  }`} />
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    feature.primary
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600"
+                      : "bg-gray-100 dark:bg-gray-700"
+                  }`}
+                >
+                  <feature.icon
+                    className={`w-6 h-6 ${
+                      feature.primary
+                        ? "text-white"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white">
@@ -89,10 +95,10 @@ export const DashboardContent: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
+
               <Button
                 onClick={feature.onClick}
-                variant={feature.primary ? 'primary' : 'outline'}
+                variant={feature.primary ? "primary" : "outline"}
                 className="w-full"
               >
                 {feature.action}

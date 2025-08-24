@@ -1,4 +1,8 @@
+import axios, { AxiosError } from "axios";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { API_URL } from "../config";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 interface User {
   id: string;
@@ -9,7 +13,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -42,34 +46,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const login = async (email: string, password: string) => {
-    setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const mockUser = {
-      id: "1",
-      name: email.split("@")[0],
-      email,
-      avatar: `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg`,
-    };
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    setLoading(false);
+    try {
+      setLoading(true);
+
+      const response = await axios.post(API_URL + "/auth/login", {
+        email,
+        password,
+      });
+
+      const token = response.data.token;
+      Cookies.set("auth", token, { expires: 7 });
+
+      setLoading(false);
+      return true;
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ error: string }>;
+      toast.error(err.response?.data?.error);
+      setLoading(false);
+      return false;
+    }
   };
 
   const loginWithGoogle = async () => {};
 
   const register = async (name: string, email: string, password: string) => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const mockUser = {
-      id: "2",
-      name,
-      email,
-      avatar: `https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg`,
-    };
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    setLoading(false);
+    try {
+      setLoading(true);
+      const response = await axios.post(API_URL + "/auth/register", {
+        email,
+        password,
+        name,
+      });
+
+      console.log(response);
+
+      setLoading(false);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const logout = () => {

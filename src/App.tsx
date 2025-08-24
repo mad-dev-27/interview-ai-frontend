@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -45,7 +46,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col flex-grow h-full lg:flex-row">
         <Sidebar {...sidebarData} />
         <DashboardContent />
       </div>
@@ -73,7 +74,7 @@ const InterviewFlow: React.FC = () => {
     if (location.state?.jobDescription && location.state?.resume) {
       setInterviewData({
         jobDescription: location.state.jobDescription,
-        resume: location.state.resume
+        resume: location.state.resume,
       });
       setCurrentView("interview");
     }
@@ -93,7 +94,7 @@ const InterviewFlow: React.FC = () => {
   };
 
   const handleRestart = () => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (

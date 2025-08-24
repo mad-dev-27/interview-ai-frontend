@@ -6,6 +6,7 @@ import { Input } from "../ui/Input";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+import { toast } from "sonner";
 
 export const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,11 +26,17 @@ export const AuthForm: React.FC = () => {
     setErrors({});
 
     try {
+      let status;
       if (isLogin) {
-        await login(formData.email, formData.password);
-        navigate("/dashboard");
+        status = await login(formData.email, formData.password);
       } else {
-        await register(formData.name, formData.email, formData.password);
+        status = await register(
+          formData.name,
+          formData.email,
+          formData.password
+        );
+      }
+      if (status) {
         navigate("/dashboard");
       }
     } catch {

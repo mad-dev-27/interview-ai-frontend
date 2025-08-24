@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Clock, Zap, BarChart3, User } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Clock, Zap, BarChart3, User } from "lucide-react";
 
 interface SidebarProps {
   recentInterviews: number;
@@ -17,13 +17,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <motion.div
       initial={{ x: -300 }}
       animate={{ x: 0 }}
-      className="w-full lg:w-80 bg-white dark:bg-gray-800 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 p-4 lg:p-6 space-y-4 lg:space-y-6"
+      className="w-full h-full lg:w-80  bg-white dark:bg-gray-800 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 p-4 lg:p-6 space-y-4 lg:space-y-6"
     >
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Interview Stats
         </h2>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
           {/* Recent Interviews */}
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
@@ -32,7 +32,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Recent Interviews</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Recent Interviews
+                </p>
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {recentInterviews}
                 </p>
@@ -47,7 +49,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Zap className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Free Interviews Left</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Free Interviews Left
+                </p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {freeInterviewsLeft}
                 </p>
@@ -62,7 +66,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Available</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Available
+                </p>
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {totalInterviews}
                 </p>
@@ -79,7 +85,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </h3>
         <div className="space-y-3">
           {[1, 2, 3].map((item) => (
-            <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div
+              key={item}
+              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+            >
               <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
