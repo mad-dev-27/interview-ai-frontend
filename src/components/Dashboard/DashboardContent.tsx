@@ -1,11 +1,14 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { Play, BookOpen, TrendingUp, Award } from "lucide-react";
-import { Button } from "../ui/Button";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { Play, BookOpen, TrendingUp, Award } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
+
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleStartInterview = () => {
     navigate("/mock-interview");
@@ -44,15 +47,16 @@ export const DashboardContent: React.FC = () => {
   ];
 
   return (
-    <div className=" flex-1 p-4 lg:p-8">
+    <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-6xl mx-auto w-full"
       >
-        <div className="mb-8">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome to Your Dashboard
+        <div className="mb-12">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Welcome back, {user?.name || 'User'}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Ready to practice and improve your interview skills?
@@ -107,12 +111,12 @@ export const DashboardContent: React.FC = () => {
           ))}
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Tips - Moved to bottom */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-6 lg:mt-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-4 lg:p-6"
+          className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-4 lg:p-6"
         >
           <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Quick Tips for Success

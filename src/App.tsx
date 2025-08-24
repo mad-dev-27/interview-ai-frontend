@@ -44,9 +44,11 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       <Header />
-      <div className="flex flex-col flex-grow h-full lg:flex-row">
+
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+
         <Sidebar {...sidebarData} />
         <DashboardContent />
       </div>

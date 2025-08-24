@@ -63,30 +63,34 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-  // const [whisper, setWhisper] = useState<any>(null);
+  const [whisper, setWhisper] = useState<AutomaticSpeechRecognitionPipelineType | null>(null);
+  const [isLoadingModel, setIsLoadingModel] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   const currentQuestion = mockQuestions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / mockQuestions.length) * 100;
 
-  // const transcriber = useRef<AutomaticSpeechRecognitionPipelineType>();
+  const loadWhisperModel = async () => {
+    try {
+      setIsLoadingModel(true);
+      console.log("🔄 Loading Whisper model...");
+      const model = await pipeline(
+        "automatic-speech-recognition",
+        "Xenova/whisper-tiny"
+      );
+      setWhisper(model);
+      console.log("✅ Whisper model loaded successfully");
+    } catch (err) {
+      console.error("❌ Failed to load Whisper model:", err);
+    } finally {
+      setIsLoadingModel(false);
+    }
+  };
 
-  // const loadWhisperModel = async () => {
-  //   try {
-  //     // Load Whisper model directly from Hugging Face (no public folder)
-  //     transcriber.current = await pipeline(
-  //       "automatic-speech-recognition",
-  //       "Xenova/whisper-tiny"
-  //     );
-  //   } catch (err) {
-  //     console.error("❌ Failed to load Whisper model:", err);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   loadWhisperModel();
-  // }, []);
+  useEffect(() => {
+    loadWhisperModel();
+  }, []);
 
   // Timer
   useEffect(() => {
@@ -98,37 +102,58 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
   const startRecording = async () => {
     if (!whisper) {
-      alert("Whisper model not loaded yet. Please wait a moment...");
+      if (isLoadingModel) {
+        alert("Whisper model is still loading. Please wait a moment...");
+      } else {
+        alert("Whisper model failed to load. Please refresh the page.");
+      }
       return;
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-    chunksRef.current = [];
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
 
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
 
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
-      const audioBuffer = await audioBlob.arrayBuffer();
+      mediaRecorder.onstop = async () => {
+        try {
+          const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+          const audioBuffer = await audioBlob.arrayBuffer();
+          
+          console.log("🎤 Transcribing audio...");
+          const result = await whisper(audioBuffer);
+          console.log("📝 Transcription result:", result.text);
+          
+          setCurrentResponse((prev) => {
+            const newText = prev.trim() ? prev + " " + result.text : result.text;
+            return newText;
+          });
+        } catch (err) {
+          console.error("❌ Transcription failed:", err);
+          alert("Transcription failed. Please try again.");
+        }
+        
+        // Clean up the stream
+        stream.getTracks().forEach(track => track.stop());
+      };
 
-      try {
-        const result = await whisper(audioBuffer); // ✅ whisper pipeline usage
-        setCurrentResponse((prev) => prev + " " + result.text);
-      } catch (err) {
-        console.error("Transcription failed:", err);
-      }
-    };
-
-    mediaRecorder.start();
-    setIsRecording(true);
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("❌ Failed to access microphone:", err);
+      alert("Failed to access microphone. Please check your permissions.");
+    }
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
     setIsRecording(false);
   };
 
@@ -231,19 +256,35 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                 <label className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Your Response
                 </label>
-                <motion.button
-                  onClick={toggleRecording}
-                  className={`p-3 rounded-full transition-all duration-200 ${
-                    isRecording
-                      ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400 animate-pulse"
-                      : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title={isRecording ? "Stop recording" : "Start recording"}
-                >
-                  {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-                </motion.button>
+                <div className="flex items-center space-x-2">
+                  {isLoadingModel && (
+                    <span className="text-xs text-blue-600 dark:text-blue-400">
+                      Loading model...
+                    </span>
+                  )}
+                  <motion.button
+                    onClick={toggleRecording}
+                    disabled={isLoadingModel}
+                    className={`p-3 rounded-full transition-all duration-200 ${
+                      isRecording
+                        ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400 animate-pulse"
+                        : isLoadingModel
+                        ? "bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    }`}
+                    whileHover={{ scale: isLoadingModel ? 1 : 1.05 }}
+                    whileTap={{ scale: isLoadingModel ? 1 : 0.95 }}
+                    title={
+                      isLoadingModel 
+                        ? "Loading speech recognition model..." 
+                        : isRecording 
+                        ? "Stop recording" 
+                        : "Start recording"
+                    }
+                  >
+                    {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                  </motion.button>
+                </div>
               </div>
 
               <textarea
@@ -260,7 +301,18 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400"
                 >
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span>Listening...</span>
+                  <span>Recording... Click the microphone to stop and transcribe</span>
+                </motion.div>
+              )}
+              
+              {isLoadingModel && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400"
+                >
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span>Loading speech recognition model... This may take a moment on first use.</span>
                 </motion.div>
               )}
             </div>
