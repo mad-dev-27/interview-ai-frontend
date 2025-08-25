@@ -18,7 +18,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       initial={{ x: -300 }}
       animate={{ x: 0 }}
       className="w-full lg:w-80 lg:h-full bg-white dark:bg-gray-800 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 p-4 lg:p-6 space-y-4 lg:space-y-6 lg:overflow-y-auto"
-
     >
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -34,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Recent Interviews
+                  Completed Interviews
                 </p>
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {recentInterviews}
@@ -51,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Free Interviews Left
+                  Interviews Left
                 </p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {freeInterviewsLeft}
@@ -68,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Available
+                  Total Interview
                 </p>
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {totalInterviews}

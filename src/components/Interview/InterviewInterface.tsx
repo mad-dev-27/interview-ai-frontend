@@ -1,19 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Clock, ArrowRight, CheckCircle } from "lucide-react";
-import { Button } from "../ui/Button";
-
 import {
-  AutomaticSpeechRecognitionPipelineType,
-  pipeline,
-} from "@xenova/transformers"; // ✅ new import
-
-interface Question {
-  id: number;
-  text: string;
-  category: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-}
+  Mic,
+  MicOff,
+  Clock,
+  ArrowRight,
+  CheckCircle,
+  Play,
+  Pause,
+} from "lucide-react";
+import { Button } from "../ui/Button";
 
 const mockQuestions: Question[] = [
   {
@@ -48,6 +44,19 @@ const mockQuestions: Question[] = [
   },
 ];
 
+interface Question {
+  id: number;
+  text: string;
+  category: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+}
+
+interface AudioChunk {
+  blob: Blob;
+  timestamp: number;
+  duration: number;
+}
+
 interface InterviewInterfaceProps {
   onComplete: (responses: string[]) => void;
   jobDescription: string;
@@ -63,34 +72,19 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-  const [whisper, setWhisper] = useState<AutomaticSpeechRecognitionPipelineType | null>(null);
-  const [isLoadingModel, setIsLoadingModel] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordedChunks, setRecordedChunks] = useState<AudioChunk[]>([]);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const chunkTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const chunkStartTimeRef = useRef<number>(0);
 
   const currentQuestion = mockQuestions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / mockQuestions.length) * 100;
-
-  const loadWhisperModel = async () => {
-    try {
-      setIsLoadingModel(true);
-      console.log("🔄 Loading Whisper model...");
-      const model = await pipeline(
-        "automatic-speech-recognition",
-        "Xenova/whisper-tiny"
-      );
-      setWhisper(model);
-      console.log("✅ Whisper model loaded successfully");
-    } catch (err) {
-      console.error("❌ Failed to load Whisper model:", err);
-    } finally {
-      setIsLoadingModel(false);
-    }
-  };
-
-  useEffect(() => {
-    loadWhisperModel();
-  }, []);
 
   // Timer
   useEffect(() => {
@@ -100,60 +94,141 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     return () => clearInterval(timer);
   }, [questionStartTime]);
 
-  const startRecording = async () => {
-    if (!whisper) {
-      if (isLoadingModel) {
-        alert("Whisper model is still loading. Please wait a moment...");
-      } else {
-        alert("Whisper model failed to load. Please refresh the page.");
-      }
-      return;
-    }
-
+  // Send audio chunk to backend for transcription
+  const transcribeAudioChunk = async (audioBlob: Blob) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
+      setIsTranscribing(true);
+      console.log("🎤 Sending audio chunk for transcription...");
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+      const formData = new FormData();
+      formData.append("audio", audioBlob, `audio_chunk_${Date.now()}.webm`);
+
+      // Replace this URL with your backend endpoint
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("📝 Transcription result:", result.text);
+
+      if (result.text && result.text.trim()) {
+        setCurrentResponse((prev) => {
+          const newText = prev.trim()
+            ? prev + " " + result.text.trim()
+            : result.text.trim();
+          return newText;
+        });
+      }
+    } catch (err) {
+      console.error("❌ Transcription failed:", err);
+      // Don't show alert for every failed chunk, just log the error
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  // Process and send audio chunk
+  const processAudioChunk = async () => {
+    if (chunksRef.current.length > 0) {
+      const chunkBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+      const chunkDuration = Date.now() - chunkStartTimeRef.current;
+
+      // Store chunk for playback (dev feature)
+      const audioChunk: AudioChunk = {
+        blob: chunkBlob,
+        timestamp: chunkStartTimeRef.current,
+        duration: chunkDuration,
       };
 
-      mediaRecorder.onstop = async () => {
-        try {
-          const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
-          const audioBuffer = await audioBlob.arrayBuffer();
-          
-          console.log("🎤 Transcribing audio...");
-          const result = await whisper(audioBuffer);
-          console.log("📝 Transcription result:", result.text);
-          
-          setCurrentResponse((prev) => {
-            const newText = prev.trim() ? prev + " " + result.text : result.text;
-            return newText;
-          });
-        } catch (err) {
-          console.error("❌ Transcription failed:", err);
-          alert("Transcription failed. Please try again.");
+      setRecordedChunks((prev) => [...prev, audioChunk]);
+
+      // Send to backend for transcription
+      await transcribeAudioChunk(chunkBlob);
+
+      // Reset for next chunk
+      chunksRef.current = [];
+      chunkStartTimeRef.current = Date.now();
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16000,
+        },
+      });
+
+      streamRef.current = stream;
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+      chunkStartTimeRef.current = Date.now();
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
         }
-        
-        // Clean up the stream
-        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+
+      // Set up 11-second chunk processing
+      const processChunks = () => {
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.requestData();
+          processAudioChunk();
+
+          // Schedule next chunk processing
+          chunkTimerRef.current = setTimeout(processChunks, 11000);
+        }
+      };
+
+      // Start first chunk timer
+      chunkTimerRef.current = setTimeout(processChunks, 11000);
     } catch (err) {
       console.error("❌ Failed to access microphone:", err);
       alert("Failed to access microphone. Please check your permissions.");
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+  const stopRecording = async () => {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
+      // Clear the chunk timer
+      if (chunkTimerRef.current) {
+        clearTimeout(chunkTimerRef.current);
+        chunkTimerRef.current = null;
+      }
+
+      // Request final data and stop recording
+      mediaRecorderRef.current.requestData();
       mediaRecorderRef.current.stop();
+
+      // Process the final chunk
+      setTimeout(async () => {
+        await processAudioChunk();
+      }, 100);
     }
+
+    // Clean up the stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
     setIsRecording(false);
   };
 
@@ -165,12 +240,40 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     }
   };
 
+  // Dev feature: Play recorded audio
+  const playRecordedAudio = () => {
+    if (recordedChunks.length === 0) return;
+
+    if (isPlayingAudio) {
+      audioRef.current?.pause();
+      setIsPlayingAudio(false);
+      return;
+    }
+
+    // Combine all chunks into one blob for playback
+    const allChunks = recordedChunks.map((chunk) => chunk.blob);
+    const combinedBlob = new Blob(allChunks, { type: "audio/webm" });
+    const audioUrl = URL.createObjectURL(combinedBlob);
+
+    if (audioRef.current) {
+      audioRef.current.src = audioUrl;
+      audioRef.current.play();
+      setIsPlayingAudio(true);
+
+      audioRef.current.onended = () => {
+        setIsPlayingAudio(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+    }
+  };
+
   const handleNextQuestion = () => {
     if (isRecording) stopRecording();
 
     const newResponses = [...responses, currentResponse.trim()];
     setResponses(newResponses);
     setCurrentResponse("");
+    setRecordedChunks([]); // Clear recorded chunks for next question
 
     if (currentQuestionIndex < mockQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -196,6 +299,9 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Hidden audio element for playback */}
+        <audio ref={audioRef} style={{ display: "none" }} />
+
         {/* Progress Bar */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -257,30 +363,45 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   Your Response
                 </label>
                 <div className="flex items-center space-x-2">
-                  {isLoadingModel && (
+                  {/* Dev: Play recorded audio button */}
+                  {recordedChunks.length > 0 && (
+                    <motion.button
+                      onClick={playRecordedAudio}
+                      className={`p-2 rounded-full text-xs transition-all duration-200 ${
+                        isPlayingAudio
+                          ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      title={
+                        isPlayingAudio ? "Stop playback" : "Play recorded audio"
+                      }
+                    >
+                      {isPlayingAudio ? (
+                        <Pause size={16} />
+                      ) : (
+                        <Play size={16} />
+                      )}
+                    </motion.button>
+                  )}
+
+                  {isTranscribing && (
                     <span className="text-xs text-blue-600 dark:text-blue-400">
-                      Loading model...
+                      Transcribing...
                     </span>
                   )}
+
                   <motion.button
                     onClick={toggleRecording}
-                    disabled={isLoadingModel}
                     className={`p-3 rounded-full transition-all duration-200 ${
                       isRecording
                         ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400 animate-pulse"
-                        : isLoadingModel
-                        ? "bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed"
                         : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
                     }`}
-                    whileHover={{ scale: isLoadingModel ? 1 : 1.05 }}
-                    whileTap={{ scale: isLoadingModel ? 1 : 0.95 }}
-                    title={
-                      isLoadingModel 
-                        ? "Loading speech recognition model..." 
-                        : isRecording 
-                        ? "Stop recording" 
-                        : "Start recording"
-                    }
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title={isRecording ? "Stop recording" : "Start recording"}
                   >
                     {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
                   </motion.button>
@@ -301,19 +422,29 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400"
                 >
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span>Recording... Click the microphone to stop and transcribe</span>
+                  <span>
+                    Recording in 11-second chunks... Transcription happens
+                    automatically
+                  </span>
                 </motion.div>
               )}
-              
-              {isLoadingModel && (
+
+              {isTranscribing && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400"
+                  className="flex items-center space-x-2 text-sm text-orange-600 dark:text-orange-400"
                 >
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span>Loading speech recognition model... This may take a moment on first use.</span>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                  <span>Processing audio chunk for transcription...</span>
                 </motion.div>
+              )}
+
+              {recordedChunks.length > 0 && (
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Recorded {recordedChunks.length} audio chunk
+                  {recordedChunks.length !== 1 ? "s" : ""}
+                </div>
               )}
             </div>
 

@@ -1,10 +1,9 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Play, BookOpen, TrendingUp, Award } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { useAuth } from '../../contexts/AuthContext';
-
+import React from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Play, BookOpen, MessageSquare, Briefcase } from "lucide-react";
+import { Button } from "../ui/Button";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
@@ -31,24 +30,24 @@ export const DashboardContent: React.FC = () => {
       onClick: () => {},
     },
     {
-      icon: TrendingUp,
-      title: "Performance Analytics",
-      description: "Track your improvement over time",
-      action: "View Analytics",
+      icon: MessageSquare,
+      title: "Soft Skills Questions",
+      description:
+        "Practice commonly asked behavioral and communication questions",
+      action: "Coming soon",
       onClick: () => {},
     },
     {
-      icon: Award,
-      title: "Skill Assessment",
-      description: "Evaluate your technical and soft skills",
-      action: "Take Assessment",
+      icon: Briefcase,
+      title: "Top Company Interview Questions",
+      description: "Practice commonly asked questions for your role",
+      action: "Coming soon",
       onClick: () => {},
     },
   ];
 
   return (
     <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -56,7 +55,7 @@ export const DashboardContent: React.FC = () => {
       >
         <div className="mb-12">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome back, {user?.name || 'User'}!
+            Welcome back, {user?.name || "User"}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Ready to practice and improve your interview skills?
