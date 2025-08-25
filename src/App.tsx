@@ -48,7 +48,6 @@ const Dashboard: React.FC = () => {
       <Header />
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-
         <Sidebar {...sidebarData} />
         <DashboardContent />
       </div>

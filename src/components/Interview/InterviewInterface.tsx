@@ -44,11 +44,46 @@ const mockQuestions: Question[] = [
   },
 ];
 
+// Mock follow-up questions based on responses
+const generateFollowUpQuestion = (response: string, originalQuestion: string): string | null => {
+  const responseWords = response.toLowerCase();
+  
+  if (originalQuestion.includes("Tell me about yourself")) {
+    if (responseWords.includes("project") || responseWords.includes("experience")) {
+      return "Can you elaborate on one specific project that you're most proud of?";
+    }
+    if (responseWords.includes("team") || responseWords.includes("leadership")) {
+      return "Tell me about a time when you had to lead a team through a difficult situation.";
+    }
+  }
+  
+  if (originalQuestion.includes("strengths")) {
+    if (responseWords.includes("problem") || responseWords.includes("solving")) {
+      return "Can you give me a specific example of a complex problem you solved?";
+    }
+    if (responseWords.includes("communication") || responseWords.includes("collaborate")) {
+      return "Describe a situation where your communication skills made a significant difference.";
+    }
+  }
+  
+  if (originalQuestion.includes("challenging project")) {
+    if (responseWords.includes("team") || responseWords.includes("conflict")) {
+      return "How did you handle any conflicts or disagreements within the team during this project?";
+    }
+    if (responseWords.includes("deadline") || responseWords.includes("time")) {
+      return "How do you typically manage tight deadlines and competing priorities?";
+    }
+  }
+  
+  return null;
+};
 interface Question {
   id: number;
   text: string;
   category: string;
   difficulty: "Easy" | "Medium" | "Hard";
+  isFollowUp?: boolean;
+  parentQuestionId?: number;
 }
 
 interface AudioChunk {
@@ -66,6 +101,7 @@ interface InterviewInterfaceProps {
 export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   onComplete,
 }) => {
+  const [allQuestions, setAllQuestions] = useState<Question[]>(mockQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<string[]>([]);
   const [currentResponse, setCurrentResponse] = useState("");
@@ -75,6 +111,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<AudioChunk[]>([]);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [showFollowUp, setShowFollowUp] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -83,8 +120,8 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const chunkStartTimeRef = useRef<number>(0);
 
-  const currentQuestion = mockQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / mockQuestions.length) * 100;
+  const currentQuestion = allQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / allQuestions.length) * 100;
 
   // Timer
   useEffect(() => {
@@ -272,10 +309,33 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
     const newResponses = [...responses, currentResponse.trim()];
     setResponses(newResponses);
+    
+    // Check if we should generate a follow-up question
+    const followUpQuestion = generateFollowUpQuestion(currentResponse.trim(), currentQuestion.text);
+    
+    if (followUpQuestion && !currentQuestion.isFollowUp && Math.random() > 0.5) { // 50% chance for follow-up
+      const followUp: Question = {
+        id: Date.now(),
+        text: followUpQuestion,
+        category: "Follow-up",
+        difficulty: "Medium",
+        isFollowUp: true,
+        parentQuestionId: currentQuestion.id
+      };
+      
+      // Insert follow-up question after current question
+      const newQuestions = [...allQuestions];
+      newQuestions.splice(currentQuestionIndex + 1, 0, followUp);
+      setAllQuestions(newQuestions);
+      setShowFollowUp(true);
+      
+      setTimeout(() => setShowFollowUp(false), 3000);
+    }
+    
     setCurrentResponse("");
     setRecordedChunks([]); // Clear recorded chunks for next question
 
-    if (currentQuestionIndex < mockQuestions.length - 1) {
+    if (currentQuestionIndex < allQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setQuestionStartTime(Date.now());
     } else {
@@ -310,7 +370,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
         >
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Question {currentQuestionIndex + 1} of {mockQuestions.length}
+              Question {currentQuestionIndex + 1} of {allQuestions.length}
             </span>
             <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Clock size={16} />
@@ -338,6 +398,15 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-6"
           >
             <div className="space-y-4">
+              {showFollowUp && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-sm text-blue-800 dark:text-blue-200"
+                >
+                  💡 Follow-up question generated based on your response!
+                </motion.div>
+              )}
               <div className="flex items-center justify-between">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -345,6 +414,9 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   }`}
                 >
                   {currentQuestion.difficulty}
+                  {currentQuestion.isFollowUp && (
+                    <span className="ml-2 text-blue-600 dark:text-blue-400">• Follow-up</span>
+                  )}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   {currentQuestion.category}
@@ -477,7 +549,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                 className="flex items-center space-x-2"
               >
                 <span>
-                  {currentQuestionIndex === mockQuestions.length - 1
+                  {currentQuestionIndex === allQuestions.length - 1
                     ? "Finish Interview"
                     : "Next Question"}
                 </span>

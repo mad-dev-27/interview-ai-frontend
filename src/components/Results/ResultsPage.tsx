@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Award, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
+import { TrendingUp, Award, AlertCircle, CheckCircle, RotateCcw, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 interface ResultsPageProps {
@@ -15,6 +15,13 @@ interface Feedback {
   score: number;
   feedback: string;
   improvements: string[];
+}
+
+interface QuestionFeedback {
+  question: string;
+  response: string;
+  score: number;
+  feedback: string;
 }
 
 const mockFeedback: Feedback[] = [
@@ -56,6 +63,39 @@ const mockFeedback: Feedback[] = [
       "Discuss how you handle conflicts",
       "Mention mentoring or helping team members"
     ]
+  }
+];
+
+const mockQuestionFeedback: QuestionFeedback[] = [
+  {
+    question: "Tell me about yourself and your background.",
+    response: "I am a software engineer with 5 years of experience...",
+    score: 85,
+    feedback: "Good structure and relevant information. Consider adding more specific achievements and quantifiable results."
+  },
+  {
+    question: "What are your greatest strengths and how do they apply to this role?",
+    response: "My greatest strength is problem-solving...",
+    score: 78,
+    feedback: "Strong examples provided. Could benefit from more specific examples that directly relate to the job requirements."
+  },
+  {
+    question: "Describe a challenging project you've worked on and how you overcame obstacles.",
+    response: "I worked on a complex web application...",
+    score: 92,
+    feedback: "Excellent use of STAR method. Clear problem definition, actions taken, and measurable results. Very compelling response."
+  },
+  {
+    question: "Where do you see yourself in 5 years?",
+    response: "In 5 years, I see myself in a leadership role...",
+    score: 70,
+    feedback: "Good vision but could be more specific about how this aligns with the company's goals and growth opportunities."
+  },
+  {
+    question: "Why are you interested in this position and our company?",
+    response: "I'm interested because of the company's innovative approach...",
+    score: 88,
+    feedback: "Shows good research about the company. Demonstrates genuine interest and alignment with company values."
   }
 ];
 
@@ -161,11 +201,55 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
           ))}
         </div>
 
+        {/* Question-by-Question Feedback */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-8"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+            <MessageSquare className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
+            Question-by-Question Analysis
+          </h2>
+          
+          <div className="space-y-6">
+            {mockQuestionFeedback.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex-1 pr-4">
+                    Q{index + 1}: {item.question}
+                  </h3>
+                  <div className={`text-xl font-bold px-3 py-1 rounded-lg ${getScoreColor(item.score)} bg-opacity-10`}>
+                    {item.score}%
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">Your Response:</p>
+                  <p className="text-gray-800 dark:text-gray-200 italic">"{item.response.substring(0, 100)}..."</p>
+                </div>
+                
+                <div className="border-l-4 border-blue-500 pl-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-medium">AI Feedback:</p>
+                  <p className="text-gray-700 dark:text-gray-300">{item.feedback}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
         {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
+          transition={{ delay: 1.2 }}
           className="text-center space-x-4"
         >
           <Button onClick={onRestart} className="inline-flex items-center space-x-2">

@@ -14,17 +14,64 @@ export const Sidebar: React.FC<SidebarProps> = ({
   totalInterviews,
 }) => {
   return (
-    <motion.div
-      initial={{ x: -300 }}
-      animate={{ x: 0 }}
-      className="w-full lg:w-80 lg:h-full bg-white dark:bg-gray-800 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 p-4 lg:p-6 space-y-4 lg:space-y-6 lg:overflow-y-auto"
-    >
+    <>
+      {/* Mobile Stats Card */}
+      <motion.div
+        initial={{ x: -300 }}
+        animate={{ x: 0 }}
+        className="lg:hidden bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 mb-4 mx-4"
+      >
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Interview Stats
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          {/* Recent Interviews */}
+          <div className="text-center">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Completed</p>
+            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              {recentInterviews}
+            </p>
+          </div>
+
+          {/* Free Interviews Left */}
+          <div className="text-center">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Left</p>
+            <p className="text-lg font-bold text-green-600 dark:text-green-400">
+              {freeInterviewsLeft}
+            </p>
+          </div>
+
+          {/* Total Available Interviews */}
+          <div className="text-center">
+            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-800 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
+            <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+              {totalInterviews}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Desktop Sidebar */}
+      <motion.div
+        initial={{ x: -300 }}
+        animate={{ x: 0 }}
+        className="hidden lg:block w-80 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-6 space-y-6 overflow-y-auto"
+      >
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Interview Stats
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {/* Recent Interviews */}
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
             <div className="flex items-center space-x-3">
@@ -105,5 +152,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
     </motion.div>
+    </>
   );
 };
