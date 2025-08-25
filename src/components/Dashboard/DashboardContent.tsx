@@ -1,16 +1,24 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Play, BookOpen, MessageSquare, Briefcase } from "lucide-react";
+import { Play, BookOpen, MessageSquare, Briefcase, ShoppingCart } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useAuth } from "../../contexts/AuthContext";
+import { PurchaseModal } from "./PurchaseModal";
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showPurchaseModal, setShowPurchaseModal] = React.useState(false);
 
   const handleStartInterview = () => {
     navigate("/mock-interview");
+  };
+
+  const handlePurchase = (quantity: number, price: number) => {
+    // Handle purchase logic here
+    console.log(`Purchasing ${quantity} interviews for $${price}`);
+    // You would integrate with your payment processor here
   };
 
   const features = [
@@ -21,6 +29,14 @@ export const DashboardContent: React.FC = () => {
       action: "Start Now",
       onClick: handleStartInterview,
       primary: true,
+    },
+    {
+      icon: ShoppingCart,
+      title: "Purchase Interviews",
+      description: "Buy additional interview sessions with special offers",
+      action: "Buy Now",
+      onClick: () => setShowPurchaseModal(true),
+      primary: false,
     },
     {
       icon: BookOpen,
@@ -47,7 +63,7 @@ export const DashboardContent: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
+    <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto pb-20 lg:pb-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -62,7 +78,7 @@ export const DashboardContent: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -110,7 +126,7 @@ export const DashboardContent: React.FC = () => {
           ))}
         </div>
 
-        {/* Quick Tips - Moved to bottom */}
+        {/* Quick Tips - Responsive positioning */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,6 +164,13 @@ export const DashboardContent: React.FC = () => {
           </div>
         </motion.div>
       </motion.div>
+
+      {showPurchaseModal && (
+        <PurchaseModal
+          onClose={() => setShowPurchaseModal(false)}
+          onPurchase={handlePurchase}
+        />
+      )}
     </div>
   );
 };
