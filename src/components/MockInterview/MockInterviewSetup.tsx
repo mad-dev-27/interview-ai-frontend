@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, FileText, Briefcase, ArrowRight, X } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Upload, FileText, Briefcase, ArrowRight, X } from "lucide-react";
+import { Button } from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
-export const MockInterviewSetup: React.FC = () => {
-  const [jobDescription, setJobDescription] = useState('');
+const MockInterviewSetup: React.FC = () => {
+  const [jobDescription, setJobDescription] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [errors, setErrors] = useState<{ jobDescription?: string; resume?: string }>({});
+  const [errors, setErrors] = useState<{
+    jobDescription?: string;
+    resume?: string;
+  }>({});
   const navigate = useNavigate();
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    } else if (e.type === "dragleave") {
       setDragActive(false);
     }
   };
@@ -28,11 +31,14 @@ export const MockInterviewSetup: React.FC = () => {
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      if (file.type === 'application/pdf') {
+      if (file.type === "application/pdf") {
         setResume(file);
-        setErrors(prev => ({ ...prev, resume: undefined }));
+        setErrors((prev) => ({ ...prev, resume: undefined }));
       } else {
-        setErrors(prev => ({ ...prev, resume: 'Please upload a PDF file only' }));
+        setErrors((prev) => ({
+          ...prev,
+          resume: "Please upload a PDF file only",
+        }));
       }
     }
   };
@@ -40,11 +46,14 @@ export const MockInterviewSetup: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.type === 'application/pdf') {
+      if (file.type === "application/pdf") {
         setResume(file);
-        setErrors(prev => ({ ...prev, resume: undefined }));
+        setErrors((prev) => ({ ...prev, resume: undefined }));
       } else {
-        setErrors(prev => ({ ...prev, resume: 'Please upload a PDF file only' }));
+        setErrors((prev) => ({
+          ...prev,
+          resume: "Please upload a PDF file only",
+        }));
       }
     }
   };
@@ -54,11 +63,11 @@ export const MockInterviewSetup: React.FC = () => {
     const newErrors: { jobDescription?: string; resume?: string } = {};
 
     if (!jobDescription.trim()) {
-      newErrors.jobDescription = 'Job description is required';
+      newErrors.jobDescription = "Job description is required";
     }
 
     if (!resume) {
-      newErrors.resume = 'Resume upload is required';
+      newErrors.resume = "Resume upload is required";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -67,17 +76,17 @@ export const MockInterviewSetup: React.FC = () => {
     }
 
     // Navigate to interview interface with data
-    navigate('/interview', { 
-      state: { 
-        jobDescription: jobDescription.trim(), 
-        resume 
-      } 
+    navigate("/interview", {
+      state: {
+        jobDescription: jobDescription.trim(),
+        resume,
+      },
     });
   };
 
   const removeResume = () => {
     setResume(null);
-    setErrors(prev => ({ ...prev, resume: undefined }));
+    setErrors((prev) => ({ ...prev, resume: undefined }));
   };
 
   return (
@@ -113,9 +122,11 @@ export const MockInterviewSetup: React.FC = () => {
                   Job Description
                 </h2>
               </div>
-              
+
               <p className="text-gray-600 dark:text-gray-400">
-                Paste the job description or key requirements for the position you're applying for. This helps us tailor the interview questions to match the role.
+                Paste the job description or key requirements for the position
+                you're applying for. This helps us tailor the interview
+                questions to match the role.
               </p>
 
               <div className="space-y-2">
@@ -124,14 +135,19 @@ export const MockInterviewSetup: React.FC = () => {
                   onChange={(e) => {
                     setJobDescription(e.target.value);
                     if (errors.jobDescription) {
-                      setErrors(prev => ({ ...prev, jobDescription: undefined }));
+                      setErrors((prev) => ({
+                        ...prev,
+                        jobDescription: undefined,
+                      }));
                     }
                   }}
                   placeholder="Paste the job description here..."
                   className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
                 {errors.jobDescription && (
-                  <p className="text-sm text-red-600 dark:text-red-400">{errors.jobDescription}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {errors.jobDescription}
+                  </p>
                 )}
               </div>
             </div>
@@ -148,17 +164,18 @@ export const MockInterviewSetup: React.FC = () => {
               </div>
 
               <p className="text-gray-600 dark:text-gray-400">
-                Upload your resume in PDF format. We'll analyze it to ask relevant questions about your experience and skills.
+                Upload your resume in PDF format. We'll analyze it to ask
+                relevant questions about your experience and skills.
               </p>
 
               {!resume ? (
                 <div
                   className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
                     dragActive
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                       : errors.resume
-                      ? 'border-red-300 dark:border-red-600'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
+                      ? "border-red-300 dark:border-red-600"
+                      : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -171,12 +188,12 @@ export const MockInterviewSetup: React.FC = () => {
                     onChange={handleFileChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  
+
                   <div className="space-y-4">
                     <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                       <Upload className="w-8 h-8 text-gray-400" />
                     </div>
-                    
+
                     <div>
                       <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                         Drop your resume here, or click to browse
@@ -220,7 +237,9 @@ export const MockInterviewSetup: React.FC = () => {
               )}
 
               {errors.resume && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.resume}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {errors.resume}
+                </p>
               )}
             </div>
 
@@ -241,3 +260,5 @@ export const MockInterviewSetup: React.FC = () => {
     </div>
   );
 };
+
+export default MockInterviewSetup;

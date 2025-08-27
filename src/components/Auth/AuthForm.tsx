@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -7,6 +7,11 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { API_URL } from "../../config";
+import type { CredentialResponse } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,10 +21,26 @@ export const AuthForm: React.FC = () => {
     password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [googleAuthLoading, setGoogleAuthLoading] = useState(false);
 
   const { login, register, loading } = useAuth();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = Cookies.get("auth");
+    axios
+      .get(API_URL + "/auth/checkUser", {
+        headers: { Authorization: "Bearer " + token },
+      })
+      .then(() => {
+        toast.success("👋 Welcome back! Redirecting to your dashboard...");
+        navigate("/dashboard");
+      });
+    // .catch(() => {
+    //   toast.error("🔒 Session timed out. Log in to continue.");
+    // });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,41 +50,39 @@ export const AuthForm: React.FC = () => {
       let status;
       if (isLogin) {
         status = await login(formData.email, formData.password);
+        if (status) {
+          navigate("/dashboard");
+        }
       } else {
-        status = await register(
-          formData.name,
-          formData.email,
-          formData.password
-        );
-      }
-      if (status) {
-        navigate("/dashboard");
+        await register(formData.name, formData.email, formData.password);
       }
     } catch {
       setErrors({ general: "An error occurred. Please try again." });
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+    setGoogleAuthLoading(true);
     try {
-      const mockUser = {
-        id: "google-1",
-        name: "John Doe",
-        email: "john.doe@gmail.com",
-        avatar:
-          "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg",
-      };
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      // You'll need to send the credential to your backend for verification
-      // and then authenticate the user in your system
-      console.log("Google credential:", credentialResponse);
-
-      // For now, just navigate to dashboard
-      // In a real app, you'd verify the credential with your backend first
+      if (!credentialResponse.credential) return;
+      const token = credentialResponse.credential;
+      const response: { data: { token: string } } = await axios.post(
+        API_URL + "/auth/googleAuth/?token=" + token
+      );
+      // const values = jwtDecode(credentialResponse.credential);
+      // console.log(values);
+      if (!response.data.token) throw new Error("Something Went Wrong");
+      Cookies.set("auth", response.data.token, { expires: 7 });
+      const decoded = jwtDecode(token) as { name: string };
+      localStorage.setItem("name", decoded.name);
+      setGoogleAuthLoading(false);
       navigate("/dashboard");
-    } catch (error) {
-      console.error("Google login failed:", error);
-      setErrors({ general: "Google login failed. Please try again." });
+    } catch (e) {
+      console.log(e);
+      setGoogleAuthLoading(false);
+      toast.error("❌ Google login didn’t work. Try again.");
     }
   };
 
@@ -105,6 +124,7 @@ export const AuthForm: React.FC = () => {
                   <Input
                     label="Full Name"
                     type="text"
+                    disabled={googleAuthLoading}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
@@ -119,6 +139,7 @@ export const AuthForm: React.FC = () => {
             <Input
               label="Email Address"
               type="email"
+              disabled={googleAuthLoading}
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -130,6 +151,7 @@ export const AuthForm: React.FC = () => {
             <Input
               label="Password"
               type="password"
+              disabled={googleAuthLoading}
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
@@ -149,7 +171,7 @@ export const AuthForm: React.FC = () => {
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading
+              {loading || googleAuthLoading
                 ? "Please wait..."
                 : isLogin
                 ? "Sign In"

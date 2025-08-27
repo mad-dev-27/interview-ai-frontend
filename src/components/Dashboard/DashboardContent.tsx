@@ -1,14 +1,20 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Play, BookOpen, MessageSquare, Briefcase, ShoppingCart } from "lucide-react";
+import {
+  Play,
+  BookOpen,
+  MessageSquare,
+  Briefcase,
+  ShoppingCart,
+} from "lucide-react";
 import { Button } from "../ui/Button";
-import { useAuth } from "../../contexts/AuthContext";
+
 import { PurchaseModal } from "./PurchaseModal";
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+
   const [showPurchaseModal, setShowPurchaseModal] = React.useState(false);
 
   const handleStartInterview = () => {
@@ -20,6 +26,8 @@ export const DashboardContent: React.FC = () => {
     console.log(`Purchasing ${quantity} interviews for $${price}`);
     // You would integrate with your payment processor here
   };
+
+  const user = localStorage.getItem("name");
 
   const features = [
     {
@@ -71,7 +79,7 @@ export const DashboardContent: React.FC = () => {
       >
         <div className="mb-12">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome back, {user?.name || "User"}!
+            Welcome back, {user || "User"}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Ready to practice and improve your interview skills?

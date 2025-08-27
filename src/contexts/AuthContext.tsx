@@ -1,18 +1,11 @@
 import axios, { AxiosError } from "axios";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { API_URL } from "../config";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
-  user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
@@ -33,19 +26,38 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Simulate checking for existing session
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+  // useEffect(() => {
+  //   const token = Cookies.get("auth");
+  //   axios
+  //     .get(API_URL + "/auth/checkUser", {
+  //       headers: { Authorization: "Bearer " + token },
+  //     })
+  //     .then(() => {
+  //       toast.success("You’re already logged in 👍");
+  //     })
+  //     .catch(() => {
+  //       toast.error("🔒 Session timed out. Log in to continue.");
+  //     });
+  //   setLoading(false);
+  // }, []);
+
+  const resendEmail = async (email: string) => {
+    try {
+      await axios.post(API_URL + "/auth/otp", {
+        email,
+      });
+      toast.success(
+        "📩 New link is on the way — don’t forget to check spam too!"
+      );
+    } catch {
+      toast.error("🚧 Oops! We couldn’t send your email right now.");
     }
-    setLoading(false);
-  }, []);
+  };
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     try {
       setLoading(true);
 
@@ -55,12 +67,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       const token = response.data.token;
+      const decoded = jwtDecode(token) as { name: string };
+      localStorage.setItem("name", decoded.name);
       Cookies.set("auth", token, { expires: 7 });
 
       setLoading(false);
       return true;
     } catch (e: unknown) {
       const err = e as AxiosError<{ error: string }>;
+
+      if (err.response?.data?.error === "Error: Email Not Verified") {
+        toast.warning("🚧 Hold up — your email’s still unverified.", {
+          action: {
+            label: "📩 Resend Link",
+            onClick: () => resendEmail(email),
+          },
+        });
+        setLoading(false);
+        return false;
+      }
+
       toast.error(err.response?.data?.error);
       setLoading(false);
       return false;
@@ -70,31 +96,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const loginWithGoogle = async () => {};
 
   const register = async (name: string, email: string, password: string) => {
+    setLoading(true);
+
     try {
       setLoading(true);
-      const response = await axios.post(API_URL + "/auth/register", {
+      await axios.post(API_URL + "/auth/register", {
         email,
         password,
         name,
       });
-
-      console.log(response);
-
+      toast.info("🎉 You’re in! Just verify your email to keep going.");
       setLoading(false);
     } catch (e) {
-      console.log(e);
+      const err = e as AxiosError<{ error: string }>;
+      toast.error(err.response?.data?.error);
+      setLoading(false);
     }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+    Cookies.remove("auth");
+    localStorage.removeItem("name");
+    // window.location.reload();
+    window.location.href = "/auth";
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
         login,
         loginWithGoogle,
         register,

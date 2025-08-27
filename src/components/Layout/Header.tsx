@@ -1,12 +1,17 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Brain, User, LogOut } from 'lucide-react';
-import { ThemeToggle } from '../ui/ThemeToggle';
-import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../ui/Button';
+import React from "react";
+import { motion } from "framer-motion";
+import { Brain, User, LogOut, LogInIcon } from "lucide-react";
+import { ThemeToggle } from "../ui/ThemeToggle";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/Button";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 export const Header: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const user = Cookies.get("auth");
 
   return (
     <motion.header
@@ -21,37 +26,35 @@ export const Header: React.FC = () => {
             whileHover={{ scale: 1.05 }}
           >
             <Brain className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="lg:text-xl sm:text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               InterviewAI
             </span>
           </motion.div>
 
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            {user && (
+            {user ? (
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-8 h-8 text-gray-400" />
-                  )}
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {user.name}
+                    {"Hi, " + localStorage.getItem("name") || "Hi, User"}
                   </span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={logout}
-                >
+                <Button variant="ghost" size="sm" onClick={logout}>
                   <LogOut size={16} />
                 </Button>
               </div>
+            ) : (
+              <Button
+                className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  navigate("/auth");
+                }}
+              >
+                <LogInIcon size={20} />
+              </Button>
             )}
           </div>
         </div>

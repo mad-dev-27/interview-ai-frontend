@@ -1,44 +1,45 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { gsap } from 'gsap';
-import { Brain, Users, Award, TrendingUp, CheckCircle, Star } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { useAuth } from '../../contexts/AuthContext';
-import { PricingSection } from './PricingSection';
+import React, { useEffect, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { gsap } from "gsap";
+import { Brain, Users, Award, TrendingUp, CheckCircle } from "lucide-react";
+import { Button } from "../ui/Button";
+import { PricingSection } from "./PricingSection";
+import Cookies from "js-cookie";
 
 export const LandingPage: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.hero-element', 
+      gsap.fromTo(
+        ".hero-element",
         { opacity: 0, y: 50 },
-        { 
-          opacity: 1, 
-          y: 0, 
+        {
+          opacity: 1,
+          y: 0,
           duration: 1,
           stagger: 0.2,
-          ease: 'power3.out'
+          ease: "power3.out",
         }
       );
 
-      gsap.fromTo('.feature-card',
+      gsap.fromTo(
+        ".feature-card",
         { opacity: 0, y: 30 },
         {
           opacity: 1,
           y: 0,
           duration: 0.8,
           stagger: 0.15,
-          ease: 'power2.out',
+          ease: "power2.out",
           scrollTrigger: {
-            trigger: '.features-section',
-            start: 'top 80%'
-          }
+            trigger: ".features-section",
+            start: "top 80%",
+          },
         }
       );
     }, heroRef);
@@ -49,57 +50,69 @@ export const LandingPage: React.FC = () => {
   const features = [
     {
       icon: Brain,
-      title: 'AI-Powered Analysis',
-      description: 'Get intelligent feedback on your responses with detailed analysis and scoring.'
+      title: "AI-Powered Analysis",
+      description:
+        "Get intelligent feedback on your responses with detailed analysis and scoring.",
     },
     {
       icon: Users,
-      title: 'Real Interview Experience',
-      description: 'Practice with realistic interview scenarios from various industries.'
+      title: "Real Interview Experience",
+      description:
+        "Practice with realistic interview scenarios from various industries.",
     },
     {
       icon: Award,
-      title: 'Performance Tracking',
-      description: 'Track your progress over time and identify areas for improvement.'
+      title: "Performance Tracking",
+      description:
+        "Track your progress over time and identify areas for improvement.",
     },
     {
       icon: TrendingUp,
-      title: 'Detailed Insights',
-      description: 'Receive comprehensive feedback on communication, technical skills, and more.'
-    }
+      title: "Detailed Insights",
+      description:
+        "Receive comprehensive feedback on communication, technical skills, and more.",
+    },
   ];
 
   const testimonials = [
     {
-      name: 'Sarah Johnson',
-      role: 'Software Engineer at Tech Corp',
-      content: 'InterviewAI helped me prepare for my dream job. The feedback was incredibly detailed and actionable.',
-      rating: 5
+      name: "Sarah Johnson",
+      role: "Software Engineer at Tech Corp",
+      content:
+        "InterviewAI helped me prepare for my dream job. The feedback was incredibly detailed and actionable.",
+      rating: 5,
     },
     {
-      name: 'Michael Chen',
-      role: 'Product Manager at StartupCo',
-      content: 'The AI analysis is spot-on. It identified areas I never realized I needed to work on.',
-      rating: 5
+      name: "Michael Chen",
+      role: "Product Manager at StartupCo",
+      content:
+        "The AI analysis is spot-on. It identified areas I never realized I needed to work on.",
+      rating: 5,
     },
     {
-      name: 'Emily Rodriguez',
-      role: 'Marketing Director',
-      content: 'Great platform for interview preparation. The variety of questions is impressive.',
-      rating: 4
-    }
+      name: "Emily Rodriguez",
+      role: "Marketing Director",
+      content:
+        "Great platform for interview preparation. The variety of questions is impressive.",
+      rating: 4,
+    },
   ];
 
   const handleStartInterview = () => {
-    if (user) {
-      navigate('/dashboard');
+    const token = Cookies.get("auth");
+    if (token) {
+      navigate("/dashboard");
     } else {
-      navigate('/auth');
+      navigate("/auth");
     }
+    navigate("/auth");
   };
 
   return (
-    <div ref={heroRef} className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
+    <div
+      ref={heroRef}
+      className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900"
+    >
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <motion.div style={{ y }} className="absolute inset-0 z-0">
@@ -109,7 +122,7 @@ export const LandingPage: React.FC = () => {
         </motion.div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h1 
+          <motion.h1
             className="hero-element text-6xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -121,15 +134,16 @@ export const LandingPage: React.FC = () => {
             </span>
           </motion.h1>
 
-          <motion.p 
+          <motion.p
             className="hero-element text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            Practice with AI-powered mock interviews, get detailed feedback, and land your dream job with confidence.
+            Practice with AI-powered mock interviews, get detailed feedback, and
+            land your dream job with confidence.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             className="hero-element flex flex-col sm:flex-row gap-4 justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -142,7 +156,7 @@ export const LandingPage: React.FC = () => {
             </Button>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="hero-element mt-12 flex items-center justify-center space-x-8 text-gray-600 dark:text-gray-400"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -171,7 +185,8 @@ export const LandingPage: React.FC = () => {
               Why Choose InterviewAI?
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Our platform combines cutting-edge AI technology with proven interview techniques
+              Our platform combines cutting-edge AI technology with proven
+              interview techniques
             </p>
           </div>
 
@@ -213,10 +228,11 @@ export const LandingPage: React.FC = () => {
               Ready to Ace Your Next Interview?
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Start practicing today and build the confidence you need to succeed.
+              Start practicing today and build the confidence you need to
+              succeed.
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="secondary"
               onClick={handleStartInterview}
             >
