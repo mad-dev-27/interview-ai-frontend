@@ -1,76 +1,80 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Zap, Crown, Settings } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { CustomPricingModal } from './CustomPricingModal';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, X, Zap, Crown, Settings } from "lucide-react";
+import { Button } from "../ui/Button";
+import { CustomPricingModal } from "./CustomPricingModal";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const PricingSection: React.FC = () => {
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const navigate = useNavigate();
 
   const plans = [
     {
-      name: 'Free',
-      price: '$0',
-      description: 'Try our platform with basic features',
+      name: "Free",
+      price: "₹0",
+      description: "Try our platform with basic features",
       icon: Zap,
       features: [
-        '1 interview session',
-        'Basic performance analysis',
-        'Limited feedback',
-        'No detailed insights'
+        "1 interview session",
+        "Basic performance analysis",
+        "Limited feedback",
+        "No detailed insights",
       ],
       limitations: [
-        'No detailed analysis',
-        'Basic scoring only',
-        'Limited question variety'
+        "No detailed analysis",
+        "Basic scoring only",
+        "Limited question variety",
       ],
-      buttonText: 'Start Free',
+      buttonText: "Start Free",
       popular: false,
     },
     {
-      name: 'Per Interview',
-      price: '$150',
-      description: 'Pay per interview with full features',
+      name: "Per Interview",
+      price: "₹150",
+      description: "Pay per interview with full features",
       icon: Crown,
       features: [
-        'Detailed AI-powered insights',
-        'Comprehensive performance tracking',
-        'Advanced analytics dashboard',
-        'Industry-specific questions',
-        'Personalized improvement suggestions',
-        'Video recording & playback',
-        'Unlimited practice time'
+        "Detailed AI-powered insights",
+        "Comprehensive performance tracking",
+        "Advanced analytics dashboard",
+        "Industry-specific questions",
+        "Personalized improvement suggestions",
+        "Video recording & playback",
+        "Unlimited practice time",
       ],
       limitations: [],
-      buttonText: 'Buy Interview',
+      buttonText: "Buy Interview",
       popular: true,
     },
     {
-      name: 'Custom',
-      price: 'Contact Us',
-      description: 'Tailored solution for your needs',
+      name: "Custom",
+      price: "Contact Us",
+      description: "Tailored solution for your needs",
       icon: Settings,
       features: [
-        'Everything in Per Interview',
-        'Bulk interview packages',
-        'Team management',
-        'Custom question sets',
-        'Priority support',
-        'Integration options',
-        'Volume discounts'
+        "Everything in Per Interview",
+        "Bulk interview packages",
+        "Team management",
+        "Custom question sets",
+        "Priority support",
+        "Integration options",
+        "Volume discounts",
       ],
       limitations: [],
-      buttonText: 'Get Quote',
+      buttonText: "Get Quote",
       popular: false,
     },
   ];
 
   const handlePlanSelect = (planName: string) => {
-    if (planName === 'Custom') {
+    if (planName === "Custom") {
       setShowCustomModal(true);
     } else {
-      // Handle other plan selections
-      console.log(`Selected plan: ${planName}`);
+      toast.info("⚡ Hang tight — loading the purchase page.");
+      navigate("/dashboard?type=purchase");
+      // console.log(`Selected plan: ${planName}`);
     }
   };
 
@@ -95,7 +99,9 @@ export const PricingSection: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 ${
-                  plan.popular ? 'ring-2 ring-blue-500 ring-opacity-50 scale-105' : ''
+                  plan.popular
+                    ? "ring-2 ring-blue-500 ring-opacity-50 scale-105"
+                    : ""
                 }`}
               >
                 {plan.popular && (
@@ -123,13 +129,21 @@ export const PricingSection: React.FC = () => {
 
                 <div className="space-y-4 mb-8">
                   {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-start space-x-3">
+                    <div
+                      key={featureIndex}
+                      className="flex items-start space-x-3"
+                    >
                       <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {feature}
+                      </span>
                     </div>
                   ))}
                   {plan.limitations.map((limitation, limitationIndex) => (
-                    <div key={limitationIndex} className="flex items-start space-x-3">
+                    <div
+                      key={limitationIndex}
+                      className="flex items-start space-x-3"
+                    >
                       <X className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-500 dark:text-gray-400 line-through">
                         {limitation}
@@ -140,7 +154,7 @@ export const PricingSection: React.FC = () => {
 
                 <Button
                   onClick={() => handlePlanSelect(plan.name)}
-                  variant={plan.popular ? 'primary' : 'outline'}
+                  variant={plan.popular ? "primary" : "outline"}
                   className="w-full"
                 >
                   {plan.buttonText}

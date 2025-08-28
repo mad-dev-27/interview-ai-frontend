@@ -110,22 +110,22 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchas
                     </h3>
                     {tier.savings && (
                       <p className="text-sm text-green-600 dark:text-green-400">
-                        Save ${tier.savings}
+                        Save ₹{tier.savings}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    ${tier.price}
+                    ₹{tier.price}
                   </div>
                   {tier.savings && (
                     <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                      ${tier.originalPrice}
+                      ₹{tier.originalPrice}
                     </div>
                   )}
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    ${(tier.price / tier.quantity).toFixed(0)} per interview
+                    ₹{(tier.price / tier.quantity).toFixed(0)} per interview
                   </div>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchas
             className="flex-1 flex items-center justify-center space-x-2"
           >
             <ShoppingCart size={16} />
-            <span>Purchase ${selectedTier.price}</span>
+            <span>Purchase ₹{selectedTier.price}</span>
           </Button>
         </div>
       </motion.div>

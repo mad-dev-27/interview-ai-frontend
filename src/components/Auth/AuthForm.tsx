@@ -7,7 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 import { API_URL } from "../../config";
 import type { CredentialResponse } from "@react-oauth/google";
@@ -61,27 +61,32 @@ export const AuthForm: React.FC = () => {
     }
   };
 
-  const handleGoogleSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
+  const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     setGoogleAuthLoading(true);
+    if (!credentialResponse.credential) return;
+    const token = credentialResponse.credential;
     try {
-      if (!credentialResponse.credential) return;
-      const token = credentialResponse.credential;
-      const response: { data: { token: string } } = await axios.post(
-        API_URL + "/auth/googleAuth/?token=" + token
-      );
-      // const values = jwtDecode(credentialResponse.credential);
-      // console.log(values);
-      if (!response.data.token) throw new Error("Something Went Wrong");
-      Cookies.set("auth", response.data.token, { expires: 7 });
-      const decoded = jwtDecode(token) as { name: string };
-      localStorage.setItem("name", decoded.name);
-      setGoogleAuthLoading(false);
-      navigate("/dashboard");
+      const response = axios.post(API_URL + "/auth/googleAuth/?token=" + token);
+
+      toast.promise(response, {
+        loading: "🔄 Signing you in with Google...",
+        success: (data: AxiosResponse) => {
+          if (!data.data.token) throw new Error("Something Went Wrong");
+          Cookies.set("auth", data.data.token, { expires: 7 });
+          const decoded = jwtDecode(token) as { name: string };
+          localStorage.setItem("name", decoded.name);
+          setGoogleAuthLoading(false);
+          navigate("/dashboard");
+          return "✅ Logged in successfully! Redirecting to dashboard...";
+        },
+        error: (e) => {
+          setGoogleAuthLoading(false);
+          console.log(e);
+          return "❌ Google login didn’t work. Try again.";
+        },
+      });
     } catch (e) {
       console.log(e);
-      setGoogleAuthLoading(false);
       toast.error("❌ Google login didn’t work. Try again.");
     }
   };

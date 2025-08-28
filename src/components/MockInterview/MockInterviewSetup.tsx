@@ -3,6 +3,11 @@ import { motion } from "framer-motion";
 import { Upload, FileText, Briefcase, ArrowRight, X } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useNavigate } from "react-router-dom";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import { API_URL } from "../../config";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
+import { useQuestionStore } from "../../store/interviewStore";
 
 const MockInterviewSetup: React.FC = () => {
   const [jobDescription, setJobDescription] = useState("");
@@ -12,6 +17,10 @@ const MockInterviewSetup: React.FC = () => {
     jobDescription?: string;
     resume?: string;
   }>({});
+
+  const { setQuestions } = useQuestionStore();
+
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleDrag = (e: React.DragEvent) => {
@@ -60,6 +69,7 @@ const MockInterviewSetup: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const newErrors: { jobDescription?: string; resume?: string } = {};
 
     if (!jobDescription.trim()) {
@@ -75,13 +85,69 @@ const MockInterviewSetup: React.FC = () => {
       return;
     }
 
-    // Navigate to interview interface with data
-    navigate("/interview", {
-      state: {
-        jobDescription: jobDescription.trim(),
-        resume,
+    const session = localStorage.getItem("sessionId");
+
+    const token = Cookies.get("auth");
+
+    const formData = new FormData();
+
+    formData.append("jobDescription", jobDescription.trim());
+
+    if (!resume) {
+      throw new Error("resume is missing");
+    }
+
+    formData.append("file", resume, "resume.pdf");
+
+    const preInterviewSetup = axios.post(
+      API_URL + "/user/preInterview?sessionId=" + session,
+      formData,
+      { headers: { Authorization: "Bearer " + token } }
+    );
+
+    toast.promise(preInterviewSetup, {
+      loading: "⚡ Setting things up... this won’t take long!",
+      success: (data: AxiosResponse) => {
+        setQuestions(data.data.questions);
+
+        setLoading(false);
+        navigate("/interview", {
+          state: {
+            jobDescription: jobDescription.trim(),
+            resume,
+          },
+        });
+        return "🎉 All done! Your questions are ready to roll.";
+      },
+      error: (err: AxiosError<{ error?: string }>) => {
+        setLoading(false);
+
+        const serverError = err.response?.data?.error;
+
+        if (serverError) {
+          try {
+            const jsonPart = serverError.replace(/^Error:\s*/, "");
+            const parsed = JSON.parse(jsonPart);
+
+            if (!parsed.jdValid && !parsed.resumeValid) {
+              return "❌ Both the Job Description and Resume look invalid. Please fix them and try again.";
+            }
+            if (!parsed.jdValid) {
+              return "⚠️ The Job Description doesn’t look valid. Please correct it and try again.";
+            }
+            if (!parsed.resumeValid) {
+              return "⚠️ The Resume doesn’t look valid. Please correct it and try again.";
+            }
+          } catch {
+            return "💥 Error while reading validation response. Try again.";
+          }
+        }
+
+        return "😅 Something went wrong — please try again.";
       },
     });
+
+    // Navigate to interview interface with data
   };
 
   const removeResume = () => {
@@ -248,6 +314,7 @@ const MockInterviewSetup: React.FC = () => {
               <Button
                 type="submit"
                 size="lg"
+                disabled={loading}
                 className="w-full flex items-center justify-center space-x-2"
               >
                 <span>Start Mock Interview</span>

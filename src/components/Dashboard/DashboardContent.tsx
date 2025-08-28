@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Play,
   BookOpen,
@@ -11,14 +11,43 @@ import {
 import { Button } from "../ui/Button";
 
 import { PurchaseModal } from "./PurchaseModal";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import { API_URL } from "../../config";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
 
+  const [searchParams] = useSearchParams();
+
   const [showPurchaseModal, setShowPurchaseModal] = React.useState(false);
 
+  useEffect(() => {
+    if (searchParams.get("type") === "purchase") {
+      setShowPurchaseModal(true);
+    }
+  }, [searchParams]);
+
   const handleStartInterview = () => {
-    navigate("/mock-interview");
+    const token = Cookies.get("auth");
+
+    const createSession = axios.post(
+      API_URL + "/user/session",
+      {},
+      { headers: { Authorization: "Bearer " + token } }
+    );
+    toast.promise(createSession, {
+      loading: "⚡ Setting up your interview session..",
+      success: (data: AxiosResponse) => {
+        localStorage.setItem("sessionId", data.data.sessionId);
+        navigate("/mock-interview");
+        return "✅ Session ready! Redirecting you to the interview...";
+      },
+      error: (error: AxiosError<{ error: string }>) => {
+        return error.response?.data?.error ?? "Something went wrong.";
+      },
+    });
   };
 
   const handlePurchase = (quantity: number, price: number) => {

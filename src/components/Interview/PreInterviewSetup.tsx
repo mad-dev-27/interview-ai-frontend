@@ -52,6 +52,8 @@ export const PreInterviewSetup: React.FC<PreInterviewSetupProps> = ({ onComplete
     }
   };
 
+  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { jobDescription?: string; resume?: string } = {};
