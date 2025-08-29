@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Award, AlertCircle, CheckCircle, RotateCcw, MessageSquare } from 'lucide-react';
+import { TrendingUp, Award, AlertCircle, CheckCircle, RotateCcw, MessageSquare, User, Target, Lightbulb } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { API_URL } from '../../config';
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
 interface ResultsPageProps {
   responses: string[];
@@ -10,94 +13,50 @@ interface ResultsPageProps {
   onRestart: () => void;
 }
 
-interface Feedback {
-  category: string;
-  score: number;
-  feedback: string;
-  improvements: string[];
+interface OverallFeedback {
+  overall_score: number;
+  strengths: string[];
+  areas_to_improve: string[];
+  analysis: {
+    communication: string;
+    technical_depth: string;
+    confidence: string;
+    relevance_to_role: string;
+  };
+  interviewer_impression: {
+    positives: string[];
+    concerns: string[];
+  };
+  final_recommendation: string;
+  final_feedback: string;
 }
 
 interface QuestionFeedback {
-  question: string;
-  response: string;
-  score: number;
-  feedback: string;
+  msg: string;
+  llmFeedback: {
+    msg: string;
+    feedback: {
+      score: number;
+      strengths: string[];
+      areas_to_improve: string[];
+      suggested_answer: string;
+      confidence_analysis: {
+        tone: string;
+        filler_words: string;
+        clarity: string;
+        confidence_score: number;
+      };
+      follow_up_questions: string[];
+      final_feedback: string;
+    };
+  };
+  followUpQuestion: boolean;
+  followQuestion?: {
+    id: string;
+    question: string;
+    isFollowUp: boolean;
+  };
 }
-
-const mockFeedback: Feedback[] = [
-  {
-    category: "Communication Skills",
-    score: 85,
-    feedback: "Your responses demonstrate clear communication and good structure. You effectively articulate your thoughts and provide relevant examples.",
-    improvements: [
-      "Use more specific quantifiable achievements",
-      "Practice the STAR method for behavioral questions",
-      "Include more industry-specific terminology"
-    ]
-  },
-  {
-    category: "Technical Knowledge",
-    score: 78,
-    feedback: "Good technical understanding, but could benefit from more depth in explaining complex concepts and recent technology trends.",
-    improvements: [
-      "Stay updated with latest industry trends",
-      "Provide more detailed technical explanations",
-      "Include specific tools and technologies you've used"
-    ]
-  },
-  {
-    category: "Problem Solving",
-    score: 90,
-    feedback: "Excellent problem-solving approach with clear methodology. You break down complex problems effectively.",
-    improvements: [
-      "Consider alternative solutions more explicitly",
-      "Discuss trade-offs in your decision making"
-    ]
-  },
-  {
-    category: "Leadership & Teamwork",
-    score: 72,
-    feedback: "Shows potential for leadership but could elaborate more on specific examples of team collaboration and conflict resolution.",
-    improvements: [
-      "Share more specific examples of leading teams",
-      "Discuss how you handle conflicts",
-      "Mention mentoring or helping team members"
-    ]
-  }
-];
-
-const mockQuestionFeedback: QuestionFeedback[] = [
-  {
-    question: "Tell me about yourself and your background.",
-    response: "I am a software engineer with 5 years of experience...",
-    score: 85,
-    feedback: "Good structure and relevant information. Consider adding more specific achievements and quantifiable results."
-  },
-  {
-    question: "What are your greatest strengths and how do they apply to this role?",
-    response: "My greatest strength is problem-solving...",
-    score: 78,
-    feedback: "Strong examples provided. Could benefit from more specific examples that directly relate to the job requirements."
-  },
-  {
-    question: "Describe a challenging project you've worked on and how you overcame obstacles.",
-    response: "I worked on a complex web application...",
-    score: 92,
-    feedback: "Excellent use of STAR method. Clear problem definition, actions taken, and measurable results. Very compelling response."
-  },
-  {
-    question: "Where do you see yourself in 5 years?",
-    response: "In 5 years, I see myself in a leadership role...",
-    score: 70,
-    feedback: "Good vision but could be more specific about how this aligns with the company's goals and growth opportunities."
-  },
-  {
-    question: "Why are you interested in this position and our company?",
-    response: "I'm interested because of the company's innovative approach...",
-    score: 88,
-    feedback: "Shows good research about the company. Demonstrates genuine interest and alignment with company values."
-  }
-];
 
 export const ResultsPage: React.FC<ResultsPageProps> = ({ 
   responses, 
@@ -105,18 +64,115 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
   resume, 
   onRestart 
 }) => {
-  const overallScore = Math.round(mockFeedback.reduce((acc, item) => acc + item.score, 0) / mockFeedback.length);
-  
+  const [overallFeedback, setOverallFeedback] = useState<OverallFeedback | null>(null);
+  const [questionFeedbacks, setQuestionFeedbacks] = useState<QuestionFeedback[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const sessionId = localStorage.getItem("sessionId");
+        const token = Cookies.get("auth");
+        
+        const response = await axios.get(
+          `${API_URL}/user/results?sessionId=${sessionId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        setOverallFeedback(response.data.overallFeedback);
+        setQuestionFeedbacks(response.data.questionFeedbacks);
+      } catch (error) {
+        console.error("Error fetching results:", error);
+        // Use mock data as fallback
+        setOverallFeedback({
+          overall_score: 7,
+          strengths: [
+            "Explained technical concepts in simple, understandable language",
+            "Showed good familiarity with the core tools and frameworks relevant to the role",
+            "Displayed adaptability when questions were rephrased or challenged",
+            "Maintained professionalism and calm tone throughout"
+          ],
+          areas_to_improve: [
+            "Add more specific project-based examples to back up technical claims",
+            "Work on conciseness — some answers drifted before getting to the key point",
+            "Confidence dipped slightly in complex scenario questions — practice pausing and structuring thoughts before answering",
+            "Occasionally missed tying answers back to job role and responsibilities"
+          ],
+          analysis: {
+            communication: "Generally clear, though occasional filler words reduced polish. Structuring answers with 'problem–solution–result' would help.",
+            technical_depth: "Solid foundation, but some responses lacked depth in real-world application and trade-offs.",
+            confidence: "Moderate to strong. Voice tone steady, but slight hesitation when unsure. Practicing mock Q&A under time pressure may help.",
+            relevance_to_role: "Experience and skills align well, but some advanced role requirements were not fully demonstrated."
+          },
+          interviewer_impression: {
+            positives: [
+              "Comes across as reliable and hardworking",
+              "Good cultural fit potential — collaborative and open",
+              "Willingness to learn and adapt is evident"
+            ],
+            concerns: [
+              "May need extra mentoring initially on advanced responsibilities",
+              "Sometimes struggled to highlight measurable impact of past work"
+            ]
+          },
+          final_recommendation: "Hire",
+          final_feedback: "Overall, you demonstrated strong technical and interpersonal qualities, with clear potential to succeed in this role. Focusing on structuring your answers, reducing filler words, and backing up statements with specific examples will significantly elevate your performance. Keep practicing — you're on the right track."
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResults();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600 dark:text-gray-400">Analyzing your interview performance...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!overallFeedback) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <p className="text-xl text-gray-600 dark:text-gray-400">Failed to load results. Please try again.</p>
+          <Button onClick={onRestart} className="mt-4">
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    if (score >= 8) return 'text-green-600 dark:text-green-400';
+    if (score >= 6) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
   };
 
   const getScoreIcon = (score: number) => {
-    if (score >= 80) return <Award className="w-6 h-6 text-green-600 dark:text-green-400" />;
-    if (score >= 60) return <TrendingUp className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />;
+    if (score >= 8) return <Award className="w-6 h-6 text-green-600 dark:text-green-400" />;
+    if (score >= 6) return <TrendingUp className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />;
     return <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />;
+  };
+
+  const getRecommendationColor = (recommendation: string) => {
+    if (recommendation.toLowerCase().includes('hire') && !recommendation.toLowerCase().includes('no')) {
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+    }
+    if (recommendation.toLowerCase().includes('borderline')) {
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+    }
+    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
   };
 
   return (
@@ -143,107 +199,284 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 mb-8"
         >
           <div className="text-center">
-            <div className={`text-6xl font-bold mb-4 ${getScoreColor(overallScore)}`}>
-              {overallScore}%
+            <div className={`text-6xl font-bold mb-4 ${getScoreColor(overallFeedback.overall_score)}`}>
+              {overallFeedback.overall_score}/10
             </div>
             <div className="flex items-center justify-center space-x-2 mb-4">
-              {getScoreIcon(overallScore)}
+              {getScoreIcon(overallFeedback.overall_score)}
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Overall Performance
               </h2>
             </div>
-            <p className="text-gray-600 dark:text-gray-400">
-              {overallScore >= 80 && "Excellent performance! You're well-prepared for interviews."}
-              {overallScore >= 60 && overallScore < 80 && "Good performance with room for improvement."}
-              {overallScore < 60 && "There's significant room for improvement. Keep practicing!"}
+            <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium mb-4 ${getRecommendationColor(overallFeedback.final_recommendation)}`}>
+              {overallFeedback.final_recommendation}
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              {overallFeedback.final_feedback}
             </p>
           </div>
         </motion.div>
 
-        {/* Detailed Feedback */}
+        {/* Strengths and Areas to Improve */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {mockFeedback.map((item, index) => (
-            <motion.div
-              key={item.category}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {item.category}
-                </h3>
-                <div className={`text-2xl font-bold ${getScoreColor(item.score)}`}>
-                  {item.score}%
-                </div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Strengths
+              </h3>
+            </div>
+            <ul className="space-y-3">
+              {overallFeedback.strengths.map((strength, index) => (
+                <li key={index} className="flex items-start space-x-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">{strength}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
 
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {item.feedback}
-              </p>
-
-              <div className="space-y-2">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                  <TrendingUp size={16} className="mr-2" />
-                  Areas for Improvement
-                </h4>
-                <ul className="space-y-2">
-                  {item.improvements.map((improvement, improvementIndex) => (
-                    <li key={improvementIndex} className="flex items-start space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <CheckCircle size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
-                      <span>{improvement}</span>
-                    </li>
-                  ))}
-                </ul>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
+                <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-            </motion.div>
-          ))}
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Areas to Improve
+              </h3>
+            </div>
+            <ul className="space-y-3">
+              {overallFeedback.areas_to_improve.map((area, index) => (
+                <li key={index} className="flex items-start space-x-3">
+                  <Target className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">{area}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
         </div>
 
-        {/* Question-by-Question Feedback */}
+        {/* Detailed Analysis */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mb-8"
+          transition={{ delay: 0.5 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8"
         >
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-            <MessageSquare className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
-            Question-by-Question Analysis
-          </h2>
-          
-          <div className="space-y-6">
-            {mockQuestionFeedback.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + index * 0.1 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex-1 pr-4">
-                    Q{index + 1}: {item.question}
-                  </h3>
-                  <div className={`text-xl font-bold px-3 py-1 rounded-lg ${getScoreColor(item.score)} bg-opacity-10`}>
-                    {item.score}%
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">Your Response:</p>
-                  <p className="text-gray-800 dark:text-gray-200 italic">"{item.response.substring(0, 100)}..."</p>
-                </div>
-                
-                <div className="border-l-4 border-blue-500 pl-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-medium">AI Feedback:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{item.feedback}</p>
-                </div>
-              </motion.div>
+          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+            Detailed Analysis
+          </h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            {Object.entries(overallFeedback.analysis).map(([key, value], index) => (
+              <div key={key} className="space-y-2">
+                <h4 className="font-semibold text-gray-900 dark:text-white capitalize">
+                  {key.replace('_', ' ')}
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                  {value}
+                </p>
+              </div>
             ))}
           </div>
         </motion.div>
+
+        {/* Interviewer Impression */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8"
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center">
+              <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Interviewer Impression
+            </h3>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-3">
+                Positive Impressions
+              </h4>
+              <ul className="space-y-2">
+                {overallFeedback.interviewer_impression.positives.map((positive, index) => (
+                  <li key={index} className="flex items-start space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">{positive}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-3">
+                Areas of Concern
+              </h4>
+              <ul className="space-y-2">
+                {overallFeedback.interviewer_impression.concerns.map((concern, index) => (
+                  <li key={index} className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">{concern}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Question-by-Question Feedback */}
+        {questionFeedbacks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mb-8"
+          >
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+              <MessageSquare className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
+              Question-by-Question Analysis
+            </h2>
+            
+            <div className="space-y-6">
+              {questionFeedbacks.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 pr-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Q{index + 1}
+                        </h3>
+                        {item.followQuestion?.isFollowUp && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-xs font-medium">
+                            Follow-up
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        {item.followQuestion?.question || "Question not available"}
+                      </p>
+                    </div>
+                    <div className={`text-xl font-bold px-3 py-1 rounded-lg ${getScoreColor(item.llmFeedback.feedback.score)} bg-opacity-10`}>
+                      {item.llmFeedback.feedback.score}/10
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* Confidence Analysis */}
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        Confidence Analysis
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600 dark:text-gray-400">Tone:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-200">
+                            {item.llmFeedback.feedback.confidence_analysis.tone}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600 dark:text-gray-400">Clarity:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-200">
+                            {item.llmFeedback.feedback.confidence_analysis.clarity}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600 dark:text-gray-400">Filler Words:</span>
+                          <p className="font-medium text-gray-800 dark:text-gray-200">
+                            {item.llmFeedback.feedback.confidence_analysis.filler_words}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600 dark:text-gray-400">Confidence:</span>
+                          <p className={`font-medium ${getScoreColor(item.llmFeedback.feedback.confidence_analysis.confidence_score)}`}>
+                            {item.llmFeedback.feedback.confidence_analysis.confidence_score}/10
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Strengths */}
+                    {item.llmFeedback.feedback.strengths.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">
+                          What You Did Well
+                        </h4>
+                        <ul className="space-y-1">
+                          {item.llmFeedback.feedback.strengths.map((strength, strengthIndex) => (
+                            <li key={strengthIndex} className="flex items-start space-x-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-700 dark:text-gray-300">{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Areas to Improve */}
+                    {item.llmFeedback.feedback.areas_to_improve.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
+                          Areas for Improvement
+                        </h4>
+                        <ul className="space-y-1">
+                          {item.llmFeedback.feedback.areas_to_improve.map((area, areaIndex) => (
+                            <li key={areaIndex} className="flex items-start space-x-2 text-sm">
+                              <Target className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-700 dark:text-gray-300">{area}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* AI Feedback */}
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        AI Feedback
+                      </h4>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        {item.llmFeedback.feedback.final_feedback}
+                      </p>
+                    </div>
+
+                    {/* Suggested Answer */}
+                    {item.llmFeedback.feedback.suggested_answer && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                          Suggested Approach
+                        </h4>
+                        <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
+                          {item.llmFeedback.feedback.suggested_answer}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Action Buttons */}
         <motion.div

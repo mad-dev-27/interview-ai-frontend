@@ -6,6 +6,7 @@ import { useQuestionStore } from "../../store/interviewStore";
 import { toast } from "sonner";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
+import axios, { AxiosError, AxiosResponse } from "axios";
 
 interface AudioChunk {
   blob: Blob;
@@ -31,6 +32,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<AudioChunk[]>([]);
   const [disableAll, setDisableAll] = useState(false);
+  const [isLoadingNextQuestion, setIsLoadingNextQuestion] = useState(false);
 
   const [setupFullScreen, setSetupFullScreen] = useState(false);
 
@@ -352,12 +354,62 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const handleNextQuestion = async () => {
     if (isRecording) {
       await stopRecording();
-
       await new Promise((resolve) => setTimeout(resolve, 1000 * 2));
     }
 
-    if (currentQuestionIndex < questions.length - 1) {
+    // Save current response
+    const updatedResponses = [...responses];
+    updatedResponses[currentQuestionIndex] = currentResponse;
+    setResponses(updatedResponses);
+
+    // Check if this is the last question
+    if (currentQuestionIndex === questions.length - 1) {
+      onComplete(updatedResponses);
+      return;
+    }
+
+    setIsLoadingNextQuestion(true);
+
+    try {
+      // Send current response to backend to check for follow-up
+      const sessionId = localStorage.getItem("sessionId");
+      const token = Cookies.get("auth");
+      
+      const response = await axios.post(
+        `${API_URL}/user/nextQuestion?sessionId=${sessionId}`,
+        {
+          questionId: currentQuestion.id,
+          response: currentResponse,
+          currentQuestionIndex
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.followUpQuestion) {
+        // Add follow-up question to the store
+        const followUpQuestion = {
+          id: response.data.followQuestion.id,
+          question: response.data.followQuestion.question,
+          isCompleted: false,
+          isFollowUp: true,
+        };
+        
+        // Insert follow-up question right after current question
+        const updatedQuestions = [...questions];
+        updatedQuestions.splice(currentQuestionIndex + 1, 0, followUpQuestion);
+        useQuestionStore.getState().setQuestions(updatedQuestions);
+      }
+
+      // Move to next question
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } catch (error) {
+      console.error("Error getting next question:", error);
+      // If there's an error, just move to next question normally
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } finally {
+      setIsLoadingNextQuestion(false);
     }
 
     setCurrentResponse("");
@@ -532,10 +584,13 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
               <div className="flex justify-end gap-4 items-center pt-4">
                 <Button
                   onClick={handleNextQuestion}
+                  disabled={isLoadingNextQuestion || disableAll}
                   className="flex items-center space-x-2"
                 >
                   <span>
-                    {currentQuestionIndex === questions.length - 1
+                    {isLoadingNextQuestion
+                      ? "Processing..."
+                      : currentQuestionIndex === questions.length - 1
                       ? "Finish Interview"
                       : "Next Question"}
                   </span>
