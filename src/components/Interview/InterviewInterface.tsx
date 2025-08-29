@@ -54,7 +54,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     const timer = setInterval(async () => {
       // Wrap in an async function
       const checkTimer = async () => {
-        const remaining = 1 * 15 * 1000 - (Date.now() - questionStartTime); // 20 mins
+        const remaining = 20 * 60 * 1000 - (Date.now() - questionStartTime); // 20 mins
         const safeRemaining = Math.max(remaining, 0);
         setTimeSpent(safeRemaining);
 
@@ -359,6 +359,8 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
+
+    setCurrentResponse("");
   };
 
   const formatTime = (ms: number) => {
@@ -518,40 +520,18 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   </motion.div>
                 )}
 
-                {recordedChunks.length > 0 && (
+                {/* {recordedChunks.length > 0 && (
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Recorded {recordedChunks.length} audio chunk
                     {recordedChunks.length !== 1 ? "s" : ""}
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-between items-center pt-4">
-                <div className="flex space-x-2">
-                  {responses.map((_, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="w-3 h-3 bg-green-500 rounded-full flex items-center justify-center"
-                    >
-                      <CheckCircle size={12} className="text-white" />
-                    </motion.div>
-                  ))}
-                  {Array.from({
-                    length: questions.length - responses.length,
-                  }).map((_, index) => (
-                    <div
-                      key={index + responses.length}
-                      className="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"
-                    />
-                  ))}
-                </div>
-
+              <div className="flex justify-end gap-4 items-center pt-4">
                 <Button
                   onClick={handleNextQuestion}
-                  disabled={!currentResponse.trim() || disableAll}
                   className="flex items-center space-x-2"
                 >
                   <span>
@@ -559,6 +539,15 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                       ? "Finish Interview"
                       : "Next Question"}
                   </span>
+                  <ArrowRight size={16} />
+                </Button>
+
+                <Button
+                  onClick={handleNextQuestion}
+                  disabled={!currentResponse.trim() || disableAll}
+                  className="flex items-center space-x-2"
+                >
+                  <span>Exit</span>
                   <ArrowRight size={16} />
                 </Button>
               </div>
