@@ -38,7 +38,6 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
   const chunkTimerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // FIX: keep an always-fresh flag to control segment restarts between onstop callbacks
   const isRecordingRef = useRef<boolean>(isRecording);
