@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Award, AlertCircle, CheckCircle, RotateCcw, MessageSquare, User, Target, Lightbulb } from 'lucide-react';
+import { TrendingUp, Award, AlertCircle, CheckCircle, RotateCcw, MessageSquare, User, Target, Lightbulb, Brain, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { API_URL } from '../../config';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { useQuestionStore } from '../../store/interviewStore';
 
 interface ResultsPageProps {
   responses: string[];
@@ -55,6 +56,7 @@ interface QuestionFeedback {
     id: string;
     question: string;
     isFollowUp: boolean;
+    mainQuestionId?: string;
   };
 }
 
@@ -67,6 +69,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
   const [overallFeedback, setOverallFeedback] = useState<OverallFeedback | null>(null);
   const [questionFeedbacks, setQuestionFeedbacks] = useState<QuestionFeedback[]>([]);
   const [loading, setLoading] = useState(true);
+  const { questions } = useQuestionStore();
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -85,41 +88,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
         setQuestionFeedbacks(response.data.questionFeedbacks);
       } catch (error) {
         console.error("Error fetching results:", error);
-        // Use mock data as fallback
-        setOverallFeedback({
-          overall_score: 7,
-          strengths: [
-            "Explained technical concepts in simple, understandable language",
-            "Showed good familiarity with the core tools and frameworks relevant to the role",
-            "Displayed adaptability when questions were rephrased or challenged",
-            "Maintained professionalism and calm tone throughout"
-          ],
-          areas_to_improve: [
-            "Add more specific project-based examples to back up technical claims",
-            "Work on conciseness — some answers drifted before getting to the key point",
-            "Confidence dipped slightly in complex scenario questions — practice pausing and structuring thoughts before answering",
-            "Occasionally missed tying answers back to job role and responsibilities"
-          ],
-          analysis: {
-            communication: "Generally clear, though occasional filler words reduced polish. Structuring answers with 'problem–solution–result' would help.",
-            technical_depth: "Solid foundation, but some responses lacked depth in real-world application and trade-offs.",
-            confidence: "Moderate to strong. Voice tone steady, but slight hesitation when unsure. Practicing mock Q&A under time pressure may help.",
-            relevance_to_role: "Experience and skills align well, but some advanced role requirements were not fully demonstrated."
-          },
-          interviewer_impression: {
-            positives: [
-              "Comes across as reliable and hardworking",
-              "Good cultural fit potential — collaborative and open",
-              "Willingness to learn and adapt is evident"
-            ],
-            concerns: [
-              "May need extra mentoring initially on advanced responsibilities",
-              "Sometimes struggled to highlight measurable impact of past work"
-            ]
-          },
-          final_recommendation: "Hire",
-          final_feedback: "Overall, you demonstrated strong technical and interpersonal qualities, with clear potential to succeed in this role. Focusing on structuring your answers, reducing filler words, and backing up statements with specific examples will significantly elevate your performance. Keep practicing — you're on the right track."
-        });
+        // Handle error appropriately
+        console.error("Failed to fetch results");
       } finally {
         setLoading(false);
       }
@@ -365,7 +335,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                     <div className="flex-1 pr-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Q{index + 1}
+                          Question {index + 1}
                         </h3>
                         {item.followQuestion?.isFollowUp && (
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-xs font-medium">
@@ -374,36 +344,51 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                         )}
                       </div>
                       <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        {item.followQuestion?.question || "Question not available"}
+                        {item.followQuestion?.question || questions[index]?.question || "Question not available"}
                       </p>
                     </div>
-                    <div className={`text-xl font-bold px-3 py-1 rounded-lg ${getScoreColor(item.llmFeedback.feedback.score)} bg-opacity-10`}>
+                    <div className="flex flex-col items-center">
+                      <div className={`text-2xl font-bold mb-1 ${getScoreColor(item.llmFeedback.feedback.score)}`}>
                       {item.llmFeedback.feedback.score}/10
+                      </div>
+                      <div className="flex items-center">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.round(item.llmFeedback.feedback.score / 2)
+                                ? 'text-yellow-400 fill-current'
+                                : 'text-gray-300 dark:text-gray-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     {/* Confidence Analysis */}
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-700 dark:to-blue-900/20 rounded-lg p-4">
                       <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Confidence Analysis
+                        <Brain className="w-4 h-4 inline mr-2" />
+                        Confidence & Communication Analysis
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="text-gray-600 dark:text-gray-400">Tone:</span>
-                          <p className="font-medium text-gray-800 dark:text-gray-200">
+                          <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
                             {item.llmFeedback.feedback.confidence_analysis.tone}
                           </p>
                         </div>
                         <div>
                           <span className="text-gray-600 dark:text-gray-400">Clarity:</span>
-                          <p className="font-medium text-gray-800 dark:text-gray-200">
+                          <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
                             {item.llmFeedback.feedback.confidence_analysis.clarity}
                           </p>
                         </div>
                         <div>
                           <span className="text-gray-600 dark:text-gray-400">Filler Words:</span>
-                          <p className="font-medium text-gray-800 dark:text-gray-200">
+                          <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
                             {item.llmFeedback.feedback.confidence_analysis.filler_words}
                           </p>
                         </div>
@@ -416,10 +401,22 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                       </div>
                     </div>
 
+                    {/* Your Response */}
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        Your Response
+                      </h4>
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-l-4 border-blue-500">
+                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed italic">
+                          "{responses[index] || 'No response recorded'}"
+                        </p>
+                      </div>
+                    </div>
                     {/* Strengths */}
                     {item.llmFeedback.feedback.strengths.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">
+                        <h4 className="font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-2" />
                           What You Did Well
                         </h4>
                         <ul className="space-y-1">
@@ -436,7 +433,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                     {/* Areas to Improve */}
                     {item.llmFeedback.feedback.areas_to_improve.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
+                        <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-3 flex items-center">
+                          <Target className="w-4 h-4 mr-2" />
                           Areas for Improvement
                         </h4>
                         <ul className="space-y-1">
@@ -451,8 +449,9 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                     )}
 
                     {/* AI Feedback */}
-                    <div className="border-l-4 border-blue-500 pl-4">
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-4 border-l-4 border-purple-500">
                       <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        <Brain className="w-4 h-4 inline mr-2" />
                         AI Feedback
                       </h4>
                       <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
@@ -462,13 +461,31 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
 
                     {/* Suggested Answer */}
                     {item.llmFeedback.feedback.suggested_answer && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
                         <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                          <Lightbulb className="w-4 h-4 inline mr-2" />
                           Suggested Approach
                         </h4>
-                        <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
+                        <p className="text-green-800 dark:text-green-200 text-sm leading-relaxed">
                           {item.llmFeedback.feedback.suggested_answer}
                         </p>
+                      </div>
+                    )}
+
+                    {/* Follow-up Questions */}
+                    {item.llmFeedback.feedback.follow_up_questions && item.llmFeedback.feedback.follow_up_questions.length > 0 && (
+                      <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+                        <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
+                          <MessageSquare className="w-4 h-4 inline mr-2" />
+                          Potential Follow-up Questions
+                        </h4>
+                        <ul className="space-y-1">
+                          {item.llmFeedback.feedback.follow_up_questions.map((question, qIndex) => (
+                            <li key={qIndex} className="text-orange-800 dark:text-orange-200 text-sm">
+                              • {question}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
@@ -478,11 +495,49 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
           </motion.div>
         )}
 
+        {/* Performance Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+          className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 mb-8"
+        >
+          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <Award className="w-6 h-6 mr-3 text-indigo-600 dark:text-indigo-400" />
+            Performance Summary
+          </h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
+                {questionFeedbacks.length > 0 
+                  ? Math.round(questionFeedbacks.reduce((acc, item) => acc + item.llmFeedback.feedback.score, 0) / questionFeedbacks.length * 10) / 10
+                  : 'N/A'
+                }
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Average Question Score</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                {questionFeedbacks.length > 0 
+                  ? Math.round(questionFeedbacks.reduce((acc, item) => acc + item.llmFeedback.feedback.confidence_analysis.confidence_score, 0) / questionFeedbacks.length * 10) / 10
+                  : 'N/A'
+                }
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Average Confidence</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                {questionFeedbacks.length}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Questions Completed</p>
+            </div>
+          </div>
+        </motion.div>
         {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
+          transition={{ delay: 1.3 }}
           className="text-center space-x-4"
         >
           <Button onClick={onRestart} className="inline-flex items-center space-x-2">
