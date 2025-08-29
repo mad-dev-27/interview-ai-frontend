@@ -30,6 +30,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<AudioChunk[]>([]);
+  const [disableAll, setDisableAll] = useState(false);
 
   const [setupFullScreen, setSetupFullScreen] = useState(false);
 
@@ -51,23 +52,19 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const timer = setInterval(async () => {
       // Wrap in an async function
       const checkTimer = async () => {
-        const remaining = 1 * 60 * 1000 - (Date.now() - questionStartTime); // 20 mins
+        const remaining = 1 * 15 * 1000 - (Date.now() - questionStartTime); // 20 mins
         const safeRemaining = Math.max(remaining, 0);
         setTimeSpent(safeRemaining);
 
         if (safeRemaining === 0) {
+          toggleRecording();
           clearInterval(timer);
+          setDisableAll(true);
 
           toast.info("⏰ Time's up! Moving to the Result Page.");
-
-          if (isRecording) {
-            await stopRecording();
-            // Wait a bit for the final chunk to be processed
-            await new Promise((resolve) => setTimeout(resolve, 1000 * 10));
-          }
 
           const waitTime = new Promise((resolve) =>
             setTimeout(resolve, 1000 * 10)
@@ -75,6 +72,13 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
           toast.promise(waitTime, {
             loading: "10,9,8..... ends in 10 seconds",
           });
+
+          if (isRecording) {
+            await stopRecording();
+            // Wait a bit for the final chunk to be processed
+            await new Promise((resolve) => setTimeout(resolve, 1000 * 10));
+          }
+
           onComplete(responses);
         }
       };
@@ -396,9 +400,6 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
         </div>
       ) : (
         <div className="max-w-4xl mx-auto px-4 py-8">
-          {/* Hidden audio element for playback */}
-          <audio ref={audioRef} style={{ display: "none" }} />
-
           {/* Progress Bar */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -466,6 +467,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
                     <motion.button
                       onClick={toggleRecording}
+                      disabled={disableAll}
                       className={`p-3 rounded-full transition-all duration-200 ${
                         isRecording
                           ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400 animate-pulse"
@@ -550,7 +552,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
                 <Button
                   onClick={handleNextQuestion}
-                  disabled={!currentResponse.trim()}
+                  disabled={!currentResponse.trim() || disableAll}
                   className="flex items-center space-x-2"
                 >
                   <span>
