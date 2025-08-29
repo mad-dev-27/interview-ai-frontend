@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Mic,
-  MicOff,
-  Clock,
-  ArrowRight,
-  CheckCircle,
-  Play,
-  Pause,
-} from "lucide-react";
+import { Mic, MicOff, Clock, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useQuestionStore } from "../../store/interviewStore";
 import { toast } from "sonner";
+import { API_URL } from "../../config";
+import Cookies from "js-cookie";
 
 interface AudioChunk {
   blob: Blob;
@@ -36,15 +30,20 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<AudioChunk[]>([]);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
   const [setupFullScreen, setSetupFullScreen] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+
   const chunkTimerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const chunkStartTimeRef = useRef<number>(0);
+
+  // FIX: keep an always-fresh flag to control segment restarts between onstop callbacks
+  const isRecordingRef = useRef<boolean>(isRecording);
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
 
   const { questions } = useQuestionStore();
 
@@ -53,14 +52,34 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const remaining = 20 * 60 * 1000 - (Date.now() - questionStartTime); // 20 mins
-      const safeRemaining = Math.max(remaining, 0);
-      setTimeSpent(safeRemaining);
+      // Wrap in an async function
+      const checkTimer = async () => {
+        const remaining = 1 * 60 * 1000 - (Date.now() - questionStartTime); // 20 mins
+        const safeRemaining = Math.max(remaining, 0);
+        setTimeSpent(safeRemaining);
 
-      if (safeRemaining === 0) {
-        clearInterval(timer);
-        toast.info("⏰ Time's up! Moving to the Result Page.");
-      }
+        if (safeRemaining === 0) {
+          clearInterval(timer);
+
+          toast.info("⏰ Time's up! Moving to the Result Page.");
+
+          if (isRecording) {
+            await stopRecording();
+            // Wait a bit for the final chunk to be processed
+            await new Promise((resolve) => setTimeout(resolve, 1000 * 10));
+          }
+
+          const waitTime = new Promise((resolve) =>
+            setTimeout(resolve, 1000 * 10)
+          );
+          toast.promise(waitTime, {
+            loading: "10,9,8..... ends in 10 seconds",
+          });
+          onComplete(responses);
+        }
+      };
+
+      checkTimer();
     }, 1000);
 
     return () => clearInterval(timer);
@@ -108,23 +127,41 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const transcribeAudioChunk = async (audioBlob: Blob) => {
     try {
       setIsTranscribing(true);
-      console.log("🎤 Sending audio chunk for transcription...");
+      console.log("🎤 Sending audio chunk for transcription...", {
+        size: audioBlob.size,
+        type: audioBlob.type,
+      });
+
+      // FIX: Always enforce correct MIME type for backend compatibility
+      const fixedBlob = new Blob([audioBlob], { type: "audio/webm" });
+
+      if (fixedBlob.size === 0 || !fixedBlob.type) {
+        console.warn("⚠️ Empty audio blob, skipping transcription");
+        return;
+      }
 
       const formData = new FormData();
-      formData.append("audio", audioBlob, `audio_chunk_${Date.now()}.webm`);
+      formData.append("audio", fixedBlob, `audio_chunk_${Date.now()}.webm`);
 
-      // Replace this URL with your backend endpoint
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        body: formData,
-      });
+      const sessionId = localStorage.getItem("sessionId") || "default-session";
+
+      const response = await fetch(
+        API_URL + "/audio/transcribe/?sessionId=" + sessionId,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${Cookies.get("auth") || ""}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log("📝 Transcription result:", result.text);
+      // console.log("📝 Transcription result:", result.text);
 
       if (result.text && result.text.trim()) {
         setCurrentResponse((prev) => {
@@ -136,36 +173,58 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
       }
     } catch (err) {
       console.error("❌ Transcription failed:", err);
-      // Don't show alert for every failed chunk, just log the error
+      toast.error(
+        "Failed to transcribe audio. Please check your network connection."
+      );
     } finally {
       setIsTranscribing(false);
     }
   };
 
   const processAudioChunk = async (blob: Blob) => {
-    const chunkDuration = Date.now() - chunkStartTimeRef.current;
+    console.log("Processing audio chunk:", {
+      size: blob.size,
+      type: blob.type,
+      constructor: blob.constructor.name,
+    });
 
-    // Debugging: log blob URL
-    const debugUrl = URL.createObjectURL(blob);
-    console.log("🎧 New audio chunk blob:", debugUrl);
+    if (!(blob instanceof Blob) || blob.size === 0) {
+      console.warn("Invalid or empty blob, skipping");
+      return;
+    }
 
-    // Store chunk for playback (dev feature)
-    const audioChunk: AudioChunk = {
-      blob,
-      timestamp: chunkStartTimeRef.current,
-      duration: chunkDuration,
-    };
-    setRecordedChunks((prev) => [...prev, audioChunk]);
+    try {
+      // FIX: Normalize every chunk to standalone WebM before upload/playback
+      const fixedBlob = new Blob([blob], { type: "audio/webm" });
 
-    // ✅ Send to backend for transcription
-    await transcribeAudioChunk(blob);
+      // const debugUrl = URL.createObjectURL(fixedBlob);
+      // console.log(
+      //   "🎧 New audio chunk blob:",
+      //   debugUrl,
+      //   " type:",
+      //   fixedBlob.type
+      // );
+      // setTimeout(() => URL.revokeObjectURL(debugUrl), 100000);
 
-    // Reset for next chunk
-    chunkStartTimeRef.current = Date.now();
+      const audioChunk: AudioChunk = {
+        blob: fixedBlob,
+        timestamp: Date.now(),
+        duration: 0,
+      };
+      setRecordedChunks((prev) => [...prev, audioChunk]);
+
+      // ✅ Send normalized blob
+      await transcribeAudioChunk(fixedBlob);
+    } catch (error) {
+      console.error("Error processing audio chunk:", error);
+    }
   };
 
+  // FIX: Segment-by-segment recording to ensure each chunk has full headers
   const startRecording = async () => {
     try {
+      console.log("🎤 Starting recording...");
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -175,62 +234,103 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
       });
 
       streamRef.current = stream;
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus",
-      });
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-      chunkStartTimeRef.current = Date.now();
 
-      mediaRecorder.ondataavailable = async (e) => {
-        if (e.data.size > 0) {
-          await processAudioChunk(e.data); // pass blob directly
-        }
-      };
+      let selectedMimeType = "audio/webm;codecs=opus";
+      if (!MediaRecorder.isTypeSupported(selectedMimeType)) {
+        selectedMimeType = "audio/webm"; // fallback
+      }
 
-      mediaRecorder.start();
+      console.log("Using MIME type:", selectedMimeType);
+
+      if (!selectedMimeType) {
+        throw new Error("No supported audio MIME type found");
+      }
+
       setIsRecording(true);
 
-      // Timer just flushes the buffer every 11s
-      const processChunks = () => {
-        if (mediaRecorder.state === "recording") {
-          mediaRecorder.requestData(); // triggers ondataavailable → processAudioChunk
-          chunkTimerRef.current = setTimeout(processChunks, 11000);
-        }
+      const SLICE_MS = 11000; // FIX: target slice size
+
+      const startSegment = () => {
+        if (!streamRef.current) return;
+
+        const mediaRecorder = new MediaRecorder(streamRef.current, {
+          mimeType: selectedMimeType,
+        });
+
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = async (event) => {
+          console.log("Data available event:", {
+            dataSize: event.data.size,
+            dataType: event.data.type,
+          });
+
+          if (event.data && event.data.size > 0) {
+            // Ensure each segment is a complete WebM blob
+            const fixed = new Blob([event.data], { type: "audio/webm" }); // FIX
+            await processAudioChunk(fixed);
+          }
+        };
+
+        mediaRecorder.onerror = (event) => {
+          console.error("MediaRecorder error:", event);
+          toast.error("Recording error occurred");
+        };
+
+        mediaRecorder.onstop = () => {
+          // Start next segment only if overall recording is still active
+          if (isRecordingRef.current && streamRef.current) {
+            // Immediately start the next segment
+            startSegment(); // FIX: restart to inject fresh headers per chunk
+          }
+        };
+
+        mediaRecorder.start(); // start this segment
+
+        // Stop this segment after SLICE_MS to finalize a standalone file with headers
+        if (chunkTimerRef.current) clearTimeout(chunkTimerRef.current);
+        chunkTimerRef.current = setTimeout(() => {
+          if (mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+          }
+        }, SLICE_MS);
       };
 
-      // Start first chunk timer
-      chunkTimerRef.current = setTimeout(processChunks, 11000);
+      // Kick off first segment
+      startSegment();
     } catch (err) {
       console.error("❌ Failed to access microphone:", err);
-      alert("Failed to access microphone. Please check your permissions.");
+      toast.error(
+        "Failed to access microphone. Please check your permissions."
+      );
+      setIsRecording(false);
     }
   };
 
   const stopRecording = async () => {
+    console.log("🛑 Stopping recording...");
+
+    // Signal no more segment restarts
+    isRecordingRef.current = false; // FIX: stop segment loop
+
+    // Clear the chunk timer
+    if (chunkTimerRef.current) {
+      clearTimeout(chunkTimerRef.current);
+      chunkTimerRef.current = null;
+    }
+
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state === "recording"
     ) {
-      // Clear the chunk timer
-      if (chunkTimerRef.current) {
-        clearTimeout(chunkTimerRef.current);
-        chunkTimerRef.current = null;
-      }
-
-      // Request final data and stop recording
-      mediaRecorderRef.current.requestData();
       mediaRecorderRef.current.stop();
-
-      // Process the final chunk
-      setTimeout(async (blob: Blob) => {
-        await processAudioChunk(blob);
-      }, 100);
     }
 
-    // Clean up the stream
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach((track) => {
+        console.log("Stopping track:", track.kind);
+        track.stop();
+      });
       streamRef.current = null;
     }
 
@@ -241,51 +341,20 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     if (isRecording) {
       stopRecording();
     } else {
+      isRecordingRef.current = true;
       startRecording();
     }
   };
 
-  // Dev feature: Play recorded audio
-  const playRecordedAudio = () => {
-    if (recordedChunks.length === 0) return;
+  const handleNextQuestion = async () => {
+    if (isRecording) {
+      await stopRecording();
 
-    if (isPlayingAudio) {
-      audioRef.current?.pause();
-      setIsPlayingAudio(false);
-      return;
+      await new Promise((resolve) => setTimeout(resolve, 1000 * 2));
     }
-
-    // Combine all chunks into one blob for playback
-    const allChunks = recordedChunks.map((chunk) => chunk.blob);
-    const combinedBlob = new Blob(allChunks, { type: "audio/webm" });
-    const audioUrl = URL.createObjectURL(combinedBlob);
-
-    if (audioRef.current) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.play();
-      setIsPlayingAudio(true);
-
-      audioRef.current.onended = () => {
-        setIsPlayingAudio(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (isRecording) stopRecording();
-
-    const newResponses = [...responses, currentResponse.trim()];
-    setResponses(newResponses);
-
-    setCurrentResponse("");
-    setRecordedChunks([]); // Clear recorded chunks for next question
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setQuestionStartTime(Date.now());
-    } else {
-      onComplete(newResponses);
     }
   };
 
@@ -295,10 +364,29 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     return `${minutes}:${(seconds % 60).toString().padStart(2, "0")}`;
   };
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (isRecording) {
+        stopRecording();
+      }
+      if (chunkTimerRef.current) {
+        clearTimeout(chunkTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
       {!setupFullScreen ? (
-        <div className="flex justify-center items-center h-screen">
+        <div className="flex flex-col justify-center items-center h-screen">
+          <p className="text-gray-600">Time Left </p>
+          <div className="flex items-center space-x-2 py-5 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+              <Clock size={16} />
+              <span>{formatTime(timeSpent)}</span>
+            </div>
+          </div>
           <Button
             onClick={enableSafeMode}
             className="px-6 dark:bg-black py-3 text-lg font-semibold"
@@ -370,31 +458,6 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                     Your Response
                   </label>
                   <div className="flex items-center space-x-2">
-                    {/* Dev: Play recorded audio button */}
-                    {recordedChunks.length > 0 && (
-                      <motion.button
-                        onClick={playRecordedAudio}
-                        className={`p-2 rounded-full text-xs transition-all duration-200 ${
-                          isPlayingAudio
-                            ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
-                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        title={
-                          isPlayingAudio
-                            ? "Stop playback"
-                            : "Play recorded audio"
-                        }
-                      >
-                        {isPlayingAudio ? (
-                          <Pause size={16} />
-                        ) : (
-                          <Play size={16} />
-                        )}
-                      </motion.button>
-                    )}
-
                     {isTranscribing && (
                       <span className="text-xs text-blue-600 dark:text-blue-400">
                         Transcribing...
@@ -426,7 +489,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   }}
                   onChange={(e) => setCurrentResponse(e.target.value)}
                   readOnly={isRecording}
-                  placeholder="Speak or type your response..."
+                  placeholder="🎤 Tap the mic to talk (your words will appear automatically — you can edit later) or just start typing…"
                   className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
 
