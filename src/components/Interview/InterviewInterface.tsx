@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Clock, ArrowRight, CheckCircle } from "lucide-react";
+import { Mic, MicOff, Clock, ArrowRight } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useQuestionStore } from "../../store/interviewStore";
 import { toast } from "sonner";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios from "axios";
 
 interface AudioChunk {
   blob: Blob;
@@ -374,16 +374,16 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
       // Send current response to backend to check for follow-up
       const sessionId = localStorage.getItem("sessionId");
       const token = Cookies.get("auth");
-      
+
       const response = await axios.post(
         `${API_URL}/user/nextQuestion?sessionId=${sessionId}`,
         {
           questionId: currentQuestion.id,
           response: currentResponse,
-          currentQuestionIndex
+          currentQuestionIndex,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -395,7 +395,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
           isCompleted: false,
           isFollowUp: true,
         };
-        
+
         // Insert follow-up question right after current question
         const updatedQuestions = [...questions];
         updatedQuestions.splice(currentQuestionIndex + 1, 0, followUpQuestion);
