@@ -195,6 +195,8 @@ export default function TermsAndConditions({
 }
 
 function Section({ title, children }) {
+              }
+  )
   return (
     <section className="mt-10">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
@@ -204,4 +206,7 @@ function Section({ title, children }) {
       </div>
     </section>
   );
+}
+
+  )
 }
