@@ -58,6 +58,7 @@ const PrivacyPolicy = () => {
           <h2 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-white">5. Information Sharing</h2>
           <p className="text-gray-700 dark:text-gray-300">
             We do not sell or rent your personal information to third parties.
+          </p>
           <address className="not-italic space-y-1 text-gray-700 dark:text-gray-300">
             <p>
               <span className="font-medium">Email:</span>{" "}
@@ -87,6 +88,3 @@ const PrivacyPolicy = () => {
 };
 
 export default PrivacyPolicy;
-
-  )
-}
