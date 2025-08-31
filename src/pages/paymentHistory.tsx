@@ -2,7 +2,15 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Header } from "../components/Layout/Header";
 import { Sidebar } from "../components/Dashboard/Sidebar";
-import { Calendar, CreditCard, CheckCircle, XCircle, Clock, IndianRupee } from "lucide-react";
+import {
+  Calendar,
+  CreditCard,
+  CheckCircle,
+  XCircle,
+  Clock,
+  IndianRupee,
+  Award,
+} from "lucide-react";
 import { Button } from "../components/ui/Button";
 
 interface PaymentRecord {
@@ -73,13 +81,19 @@ const PaymentHistory: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />;
+        return (
+          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+        );
       case "pending":
-        return <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />;
+        return (
+          <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+        );
       case "failed":
         return <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
       case "refunded":
-        return <XCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
+        return (
+          <XCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+        );
       default:
         return <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />;
     }
@@ -101,11 +115,11 @@ const PaymentHistory: React.FC = () => {
   };
 
   const totalSpent = payments
-    .filter(p => p.status === "completed")
+    .filter((p) => p.status === "completed")
     .reduce((acc, payment) => acc + payment.amount, 0);
 
   const totalInterviewsPurchased = payments
-    .filter(p => p.status === "completed")
+    .filter((p) => p.status === "completed")
     .reduce((acc, payment) => acc + payment.interviewsAdded, 0);
 
   if (loading) {
@@ -124,7 +138,7 @@ const PaymentHistory: React.FC = () => {
       <Header />
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         <Sidebar {...sidebarData} />
-        
+
         <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -153,7 +167,9 @@ const PaymentHistory: React.FC = () => {
                     <IndianRupee className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Spent</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Total Spent
+                    </p>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                       ₹{totalSpent}
                     </p>
@@ -172,7 +188,9 @@ const PaymentHistory: React.FC = () => {
                     <CreditCard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Transactions</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Total Transactions
+                    </p>
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {payments.length}
                     </p>
@@ -191,7 +209,9 @@ const PaymentHistory: React.FC = () => {
                     <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Interviews Purchased</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Interviews Purchased
+                    </p>
                     <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {totalInterviewsPurchased}
                     </p>
@@ -217,22 +237,30 @@ const PaymentHistory: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                           {payment.description}
                         </h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(payment.status)}`}>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                            payment.status
+                          )}`}
+                        >
                           {payment.status}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Calendar size={16} />
-                          <span>{new Date(payment.date).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(payment.date).toLocaleDateString()}
+                          </span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <CreditCard size={16} />
                           <span>{payment.paymentMethod}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <span className="text-xs">ID: {payment.transactionId}</span>
+                          <span className="text-xs">
+                            ID: {payment.transactionId}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -244,11 +272,12 @@ const PaymentHistory: React.FC = () => {
                         </div>
                         {payment.interviewsAdded > 0 && (
                           <div className="text-sm text-green-600 dark:text-green-400">
-                            +{payment.interviewsAdded} interview{payment.interviewsAdded > 1 ? 's' : ''}
+                            +{payment.interviewsAdded} interview
+                            {payment.interviewsAdded > 1 ? "s" : ""}
                           </div>
                         )}
                       </div>
-                      
+
                       <Button variant="outline" size="sm">
                         Download Receipt
                       </Button>
