@@ -1,31 +1,66 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { X, Building, Mail, User, Hash } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { X, Mail, User, Hash, Building2 } from "lucide-react";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import axios from "axios";
+import { toast } from "sonner";
 
 interface CustomPricingModalProps {
   onClose: () => void;
 }
 
-export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose }) => {
+export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({
+  onClose,
+}) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    companyName: '',
-    interviewCount: '',
-    requirements: '',
+    name: "",
+    email: "",
+    companyName: "",
+    interviewCount: "",
+    requirements: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Custom pricing request:', formData);
-    // You would typically send this to your backend
-    onClose();
+
+    setIsSubmitting(true);
+
+    // Simulate form submission
+    const messagePromise = axios.post("https://verify.narendira.in/contact", {
+      name: formData.name,
+      email: formData.email,
+      message: `
+      Subject : Custom Pricing Regarding
+      Message:${JSON.stringify(formData)}`,
+    });
+    toast.promise(messagePromise, {
+      loading: "Submitting your message...",
+      success: () => {
+        setIsSubmitting(false);
+        setFormData({
+          name: "",
+          email: "",
+          companyName: "",
+          interviewCount: "",
+          requirements: "",
+        });
+        onClose();
+        return "Your request has been sent successfully! Feel free to contact priority@jobprepai.in if it takes time.";
+      },
+      error: () => {
+        setIsSubmitting(false);
+        onClose();
+        return "Oops! Something went wrong. Please contact priority@jobprepai.in, and we'll get back to you ASAP";
+      },
+    });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -62,7 +97,6 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 name="name"
                 type="text"
@@ -75,7 +109,6 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose 
             </div>
 
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 name="email"
                 type="email"
@@ -88,7 +121,6 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose 
             </div>
 
             <div className="relative">
-              <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 name="companyName"
                 type="text"
@@ -101,7 +133,6 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose 
             </div>
 
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 name="interviewCount"
                 type="number"
@@ -134,10 +165,7 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose 
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-            >
+            <Button type="submit" className="flex-1">
               Submit Request
             </Button>
           </div>
@@ -145,8 +173,10 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({ onClose 
 
         <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>What happens next?</strong><br />
-            Our team will review your requirements and get back to you within 24 hours with a customized pricing proposal.
+            <strong>What happens next?</strong>
+            <br />
+            Our team will review your requirements and get back to you within 24
+            hours with a customized pricing proposal.
           </p>
         </div>
       </motion.div>

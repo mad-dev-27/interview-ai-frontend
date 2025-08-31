@@ -1,7 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Brain, Mail, MapPin, Phone } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Brain, Mail } from "lucide-react";
+
+import { Link as ScrollLink } from "react-scroll";
 
 export const Footer: React.FC = () => {
   const footerLinks = [
@@ -24,9 +25,10 @@ export const Footer: React.FC = () => {
     {
       title: "Product",
       links: [
-        { name: "Features", href: "#features" },
-        { name: "Pricing", href: "#pricing" },
-        { name: "Demo", href: "#demo" },
+        { name: "Features", href: "features" },
+        { name: "How It Works", href: "howItWorks" },
+        { name: "Pricing", href: "pricing" },
+        { name: "FAQ", href: "faq" },
       ],
     },
   ];
@@ -49,7 +51,8 @@ export const Footer: React.FC = () => {
               </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Master your interview skills with AI-powered mock interviews and detailed feedback to land your dream job.
+              Master your interview skills with AI-powered mock interviews and
+              detailed feedback to land your dream job.
             </p>
             <div className="flex items-center space-x-2 text-sm text-gray-400">
               <Mail size={16} />
@@ -66,16 +69,34 @@ export const Footer: React.FC = () => {
               transition={{ duration: 0.6, delay: (index + 1) * 0.1 }}
               className="space-y-4"
             >
-              <h3 className="text-lg font-semibold text-white">{section.title}</h3>
+              <h3 className="text-lg font-semibold text-white">
+                {section.title}
+              </h3>
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </Link>
+                    {link.href.startsWith("/") ? (
+                      // External page route
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      // Scroll to section on same page
+                      <ScrollLink
+                        to={link.href}
+                        smooth={false}
+                        duration={50}
+                        offset={-50}
+                        className="cursor-pointer text-gray-400 hover:text-white transition-colors duration-200 text-sm"
+                      >
+                        {link.name}
+                      </ScrollLink>
+                    )}
                   </li>
                 ))}
               </ul>

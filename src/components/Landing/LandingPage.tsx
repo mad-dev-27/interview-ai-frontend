@@ -9,6 +9,8 @@ import { Footer } from "./Footer";
 import Cookies from "js-cookie";
 import { HowItWorksSection } from "./HowItWorksSection";
 import { FAQSection } from "./FAQSection";
+import { Link as ScrollLink } from "react-scroll";
+import axios from "axios";
 
 export const LandingPage: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,10 @@ export const LandingPage: React.FC = () => {
     return () => ctx.revert();
   }, []);
 
+  useEffect(() => {
+    axios.get("https://verify.narendira.in/");
+  }, []);
+
   const features = [
     {
       icon: Brain,
@@ -74,30 +80,6 @@ export const LandingPage: React.FC = () => {
       title: "Detailed Insights",
       description:
         "Receive comprehensive feedback on communication, technical skills, and more.",
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Software Engineer at Tech Corp",
-      content:
-        "InterviewAI helped me prepare for my dream job. The feedback was incredibly detailed and actionable.",
-      rating: 5,
-    },
-    {
-      name: "Michael Chen",
-      role: "Product Manager at StartupCo",
-      content:
-        "The AI analysis is spot-on. It identified areas I never realized I needed to work on.",
-      rating: 5,
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "Marketing Director",
-      content:
-        "Great platform for interview preparation. The variety of questions is impressive.",
-      rating: 4,
     },
   ];
 
@@ -152,10 +134,17 @@ export const LandingPage: React.FC = () => {
             animate={{ opacity: 1 }}
           >
             <Button size="lg" onClick={handleStartInterview}>
-              Start Interview Practice
+              Get Started
             </Button>
             <Button variant="outline" size="lg">
-              Watch Demo
+              <ScrollLink
+                to={"howItWorks"}
+                smooth={false}
+                duration={10}
+                offset={-20}
+              >
+                Discover How It Works
+              </ScrollLink>
             </Button>
           </motion.div>
 
@@ -180,8 +169,15 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      <div className="py-0.25">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
+      </div>
+
       {/* Features Section */}
-      <section className="features-section py-20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+      <section
+        id="features"
+        className="features-section py-20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -215,14 +211,16 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      <div className="py-0.25">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
+      </div>
+
       {/* How It Works Section */}
       <HowItWorksSection />
 
       {/* Visual Separator */}
-      <div className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="border-t border-gray-200 dark:border-gray-700"></div>
-        </div>
+      <div className="py-0.5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
       </div>
 
       {/* Pricing Section */}

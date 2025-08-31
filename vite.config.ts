@@ -11,13 +11,6 @@ export default defineConfig({
       ext: ".br", // output file extension
     }),
   ],
-  server: {
-    host: "0.0.0.0",
-    port: 5173,
-    allowedHosts: [
-      "lc-pencil-existence-norfolk.trycloudflare.com", // add your tunnel/host here
-    ],
-  }, // ✅ comma added here
   optimizeDeps: {
     exclude: ["lucide-react"],
   },

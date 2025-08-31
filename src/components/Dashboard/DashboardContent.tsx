@@ -101,7 +101,7 @@ export const DashboardContent: React.FC = () => {
       currency: "INR",
       name: "Job Prep AI",
       description: "Test Transaction",
-      image: "https://example.com/your_logo",
+      image: window.location.origin + "/logo.png",
       order_id: getOrderId.data.id,
       // prefill: {
       //   name: "Narendira",

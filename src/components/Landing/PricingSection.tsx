@@ -80,7 +80,10 @@ export const PricingSection: React.FC = () => {
 
   return (
     <>
-      <section className="py-20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+      <section
+        id="pricing"
+        className="py-20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -168,7 +171,7 @@ export const PricingSection: React.FC = () => {
               All plans include secure payment processing and 24/7 support
             </p>
             <div className="flex items-center justify-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
-              <span>✓ Money-back guarantee</span>
+              <span>✓ Personalized insights</span>
               <span>✓ Secure payments</span>
               <span>✓ Instant access</span>
             </div>

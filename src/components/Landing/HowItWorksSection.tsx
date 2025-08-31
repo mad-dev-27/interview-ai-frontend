@@ -7,35 +7,42 @@ export const HowItWorksSection: React.FC = () => {
     {
       number: 1,
       title: "Upload Your Resume",
-      description: "Upload your latest resume, and our AI analyzes your skills, experience, and education.",
+      description:
+        "Upload your latest resume, and our AI analyzes your skills, experience, and education.",
       icon: Upload,
       color: "from-blue-500 to-blue-600",
     },
     {
       number: 2,
       title: "Provide Job Description",
-      description: "Paste the job description or select a role you're targeting. AI understands the requirements.",
+      description:
+        "Paste the job description or select a role you're targeting. AI understands the requirements.",
       icon: Briefcase,
       color: "from-purple-500 to-purple-600",
     },
     {
       number: 3,
       title: "Get AI-Generated Questions",
-      description: "Receive a tailored set of interview questions based on your resume and the role.",
+      description:
+        "Receive a tailored set of interview questions based on your resume and the role.",
       icon: MessageCircle,
       color: "from-green-500 to-green-600",
     },
     {
       number: 4,
       title: "Practice & Improve",
-      description: "Answer the questions and get instant feedback, scoring, and suggested improvements. Track your progress over time.",
+      description:
+        "Answer the questions and get instant feedback, scoring, and suggested improvements. Track your progress over time.",
       icon: TrendingUp,
       color: "from-orange-500 to-orange-600",
     },
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
+    <section
+      id="howItWorks"
+      className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <motion.h2
@@ -73,7 +80,9 @@ export const HowItWorksSection: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-center">
                   {/* Step Number */}
                   <div className="relative mb-6">
-                    <div className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                    <div
+                      className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}
+                    >
                       <step.icon className="w-8 h-8 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full flex items-center justify-center text-sm font-bold">
@@ -99,39 +108,6 @@ export const HowItWorksSection: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center mt-16"
-        >
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Ready to Get Started?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Join thousands of successful candidates who improved their interview skills with our AI platform.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                Start Free Trial
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
-              >
-                View Pricing
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   );
