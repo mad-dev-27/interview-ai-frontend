@@ -101,6 +101,11 @@ export const DashboardContent: React.FC = () => {
       description: "Test Transaction",
       image: "https://example.com/your_logo",
       order_id: getOrderId.data.id,
+      // prefill: {
+      //   name: "Narendira",
+      //   email: "Narendira2701@gmail.com",
+      //   contact: "9000090000",
+      // },
       // @ts-expect-error razorpay issue
       handler: function (response) {
         const toastId = toast.loading(
