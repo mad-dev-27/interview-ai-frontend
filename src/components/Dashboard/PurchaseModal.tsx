@@ -1,47 +1,33 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingCart, Check } from 'lucide-react';
-import { Button } from '../ui/Button';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { X, ShoppingCart, Check } from "lucide-react";
+import { Button } from "../ui/Button";
+import { usePricingStore } from "../../store/pricingStore";
 
 interface PurchaseModalProps {
   onClose: () => void;
-  onPurchase: (quantity: number, price: number) => void;
+  onPurchase: (quantity: number, price: number, id: string) => void;
 }
 
-interface PricingTier {
-  quantity: number;
+type price = {
+  id: string;
+  qty: number;
   price: number;
   originalPrice: number;
-  savings?: number;
-  popular?: boolean;
-}
+  savings: number;
+  popular: boolean;
+};
 
-const pricingTiers: PricingTier[] = [
-  {
-    quantity: 1,
-    price: 150,
-    originalPrice: 150,
-  },
-  {
-    quantity: 5,
-    price: 700,
-    originalPrice: 750,
-    savings: 50,
-    popular: true,
-  },
-  {
-    quantity: 10,
-    price: 1000,
-    originalPrice: 1500,
-    savings: 500,
-  },
-];
+export const PurchaseModal: React.FC<PurchaseModalProps> = ({
+  onClose,
+  onPurchase,
+}) => {
+  const pricing = usePricingStore((state) => state.price);
 
-export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchase }) => {
-  const [selectedTier, setSelectedTier] = useState<PricingTier>(pricingTiers[1]);
+  const [selectedTier, setSelectedTier] = useState<price>(pricing[1]);
 
   const handlePurchase = () => {
-    onPurchase(selectedTier.quantity, selectedTier.price);
+    onPurchase(selectedTier.qty, selectedTier.price, selectedTier.id);
     onClose();
   };
 
@@ -73,13 +59,13 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchas
         </div>
 
         <div className="space-y-4 mb-6">
-          {pricingTiers.map((tier) => (
+          {pricing.map((tier) => (
             <motion.div
-              key={tier.quantity}
+              key={tier.qty}
               className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${
-                selectedTier.quantity === tier.quantity
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                selectedTier.qty === tier.qty
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                  : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
               }`}
               onClick={() => setSelectedTier(tier)}
               whileHover={{ scale: 1.02 }}
@@ -95,20 +81,22 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchas
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedTier.quantity === tier.quantity
-                      ? 'border-blue-500 bg-blue-500'
-                      : 'border-gray-300 dark:border-gray-600'
-                  }`}>
-                    {selectedTier.quantity === tier.quantity && (
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      selectedTier.qty === tier.qty
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  >
+                    {selectedTier.qty === tier.qty && (
                       <Check className="w-3 h-3 text-white" />
                     )}
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {tier.quantity} Interview{tier.quantity > 1 ? 's' : ''}
+                      {tier.qty} Interview{tier.qty > 1 ? "s" : ""}
                     </h3>
-                    {tier.savings && (
+                    {tier.savings > 0 && (
                       <p className="text-sm text-green-600 dark:text-green-400">
                         Save ₹{tier.savings}
                       </p>
@@ -119,13 +107,13 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchas
                   <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     ₹{tier.price}
                   </div>
-                  {tier.savings && (
+                  {tier.savings > 0 && (
                     <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
                       ₹{tier.originalPrice}
                     </div>
                   )}
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    ₹{(tier.price / tier.quantity).toFixed(0)} per interview
+                    ₹{(tier.price / tier.qty).toFixed(0)} per interview
                   </div>
                 </div>
               </div>
@@ -147,11 +135,7 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ onClose, onPurchas
         </div>
 
         <div className="flex space-x-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={onClose} className="flex-1">
             Cancel
           </Button>
           <Button

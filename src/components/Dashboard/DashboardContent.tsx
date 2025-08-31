@@ -15,6 +15,9 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
+import { usePricingStore } from "../../store/pricingStore";
+
+// Add RazorPay type to the Window interface
 
 export const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +25,21 @@ export const DashboardContent: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const [showPurchaseModal, setShowPurchaseModal] = React.useState(false);
+
+  const setPricing = usePricingStore((state) => state.setPricing);
+
+  useEffect(() => {
+    axios
+      .get(API_URL + "/user/pricing", {
+        headers: { Authorization: "Bearer " + Cookies.get("auth") },
+      })
+      .then((data) => {
+        setPricing(data.data.pricing);
+      })
+      .catch(() => {
+        toast.error("Error Fetching Price");
+      });
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("type") === "purchase") {
@@ -50,10 +68,95 @@ export const DashboardContent: React.FC = () => {
     });
   };
 
-  const handlePurchase = (quantity: number, price: number) => {
-    // Handle purchase logic here
-    console.log(`Purchasing ${quantity} interviews for $${price}`);
-    // You would integrate with your payment processor here
+  const handlePurchase = async (
+    quantity: number,
+    price: number,
+    id: string
+  ) => {
+    console.log(`Purchasing ${quantity} interviews for $${price} id ${id}`);
+
+    const toastId = toast.loading("⚡ Just a sec, setting things up...");
+
+    const getKeyRequest = await axios.get(API_URL + "/payment/key", {
+      headers: { Authorization: "Bearer " + Cookies.get("auth") },
+    });
+
+    const key = getKeyRequest.data.key;
+
+    toast.loading("💳 Getting payment ready...", { id: toastId });
+
+    const getOrderId = await axios.post(
+      API_URL + "/payment/initiate",
+      { id },
+      { headers: { Authorization: "Bearer " + Cookies.get("auth") } }
+    );
+
+    toast.loading("🪟 Opening payment window...", { id: toastId });
+
+    const options = {
+      key,
+      amount: getOrderId.data.amount,
+      currency: "INR",
+      name: "Job Prep AI",
+      description: "Test Transaction",
+      image: "https://example.com/your_logo",
+      order_id: getOrderId.data.id,
+      // @ts-expect-error razorpay issue
+      handler: function (response) {
+        const toastId = toast.loading(
+          "💳 Hang tight… just checking your payment ✨"
+        );
+        console.log(response);
+        axios
+          .post(
+            API_URL + "/payment/validate",
+            {
+              id: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              paymentDbId: getOrderId.data.paymentDbId,
+            },
+            { headers: { Authorization: "Bearer " + Cookies.get("auth") } }
+          )
+          .then((response) => {
+            if (response.data.status === "ok") {
+              toast.success(
+                "🎉 Payment confirmed! You’re all set 🚀 (If it doesn’t show up in a few mins, mail us at support@jobprepai.in)",
+                { id: toastId }
+              );
+            } else {
+              toast.error(
+                "⚠️ Couldn’t verify the payment. If money was debited, mail us at refund@jobprepai.in",
+                { id: toastId }
+              );
+            }
+          })
+          .catch(() => {
+            toast.success(
+              "❌ Payment verification failed. If money was debited, mail us at refund@jobprepai.in",
+              { id: toastId }
+            );
+          });
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const res = await loadScript(
+      "https://checkout.razorpay.com/v1/checkout.js"
+    );
+
+    if (!res) {
+      alert("Razorpay failed to load!!");
+      return;
+    }
+
+    // @ts-expect-error razorPay
+    const rzp1 = new window.Razorpay(options);
+    rzp1.open();
+
+    toast.info("✅ Complete the payment to continue!", { id: toastId });
   };
 
   const user = localStorage.getItem("name");
@@ -210,4 +313,19 @@ export const DashboardContent: React.FC = () => {
       )}
     </div>
   );
+};
+
+// @ts-expect-error not fix
+const loadScript = (src) => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
 };

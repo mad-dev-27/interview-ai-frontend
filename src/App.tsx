@@ -11,6 +11,13 @@ import { AuthForm } from "./components/Auth/AuthForm";
 import { LandingPage } from "./components/Landing/LandingPage";
 import ProtectedRoute from "./components/protectRoute/protectRoute";
 import { Suspense, lazy } from "react";
+import TermsAndConditions from "./pages/terms&conditions";
+import CancellationRefund from "./pages/Cancellation&RefundPolicy";
+import ShippingDelivery from "./pages/shippingPolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import { Contact } from "lucide-react";
+import ContactUs from "./pages/contactUs";
+import GoogleFormEmbed from "./pages/opinionSurvey";
 
 // Lazy-loaded pages/components
 const Dashboard = lazy(() => import("./pages/dashboard"));
@@ -33,10 +40,8 @@ function AppContent() {
             </div>
           }
         />
-
         {/* Auth Page - Public Route */}
         <Route path="/auth" element={<AuthForm />} />
-
         {/* Mock Interview Setup - Public Route */}
         <Route
           path="/mock-interview"
@@ -46,7 +51,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         {/* Interview Flow - Public Route */}
         <Route
           path="/interview"
@@ -56,7 +60,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         {/* Dashboard - Protected Route */}
         <Route
           path="/dashboard"
@@ -66,6 +69,45 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/t&c"
+          element={
+            <TermsAndConditions
+              companyName="JobPrepAI"
+              effectiveDate="August 31, 2025"
+              email="support@jobprepai.in"
+              website="https://jobprepai.in/"
+              address=""
+            />
+          }
+        />
+        <Route
+          path="/cancellation&refundPolicy"
+          element={
+            <CancellationRefund
+              companyName="JobPrepAI"
+              effectiveDate="August 31, 2025"
+              email="support@jobprepai.in"
+              website="https://jobprepai.in/"
+            />
+          }
+        />
+        <Route
+          path="/shippingPolicy"
+          element={
+            <ShippingDelivery
+              companyName="JobPrepAI"
+              effectiveDate="August 31, 2025"
+              email="support@jobprepai.in"
+              website="https://jobprepai.in/"
+              address=""
+            />
+          }
+        />
+
+        <Route path="/privacyPolicy" element={<PrivacyPolicy />} />
+        <Route path="/contactUs" element={<ContactUs />} />
+        <Route path="/opinionSurvey" element={<GoogleFormEmbed />} />
 
         {/* Redirect any unknown routes to landing page */}
         <Route path="*" element={<Navigate to="/" replace />} />
