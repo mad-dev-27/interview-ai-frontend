@@ -7,6 +7,8 @@ import {
   MessageSquare,
   Briefcase,
   ShoppingCart,
+  History,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 
@@ -188,7 +190,14 @@ export const DashboardContent: React.FC = () => {
       title: "Interview History",
       description: "Review your past interview performances",
       action: "View History",
-      onClick: () => {},
+      onClick: () => navigate("/interview-history"),
+    },
+    {
+      icon: CreditCard,
+      title: "Payment History",
+      description: "Track your purchases and transaction history",
+      action: "View Payments",
+      onClick: () => navigate("/payment-history"),
     },
     {
       icon: MessageSquare,

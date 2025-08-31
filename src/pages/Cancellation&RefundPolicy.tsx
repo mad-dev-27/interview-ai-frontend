@@ -19,7 +19,7 @@ export default function NoRefundPolicy({
   website = "[Your Website]",
 }) {
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       <div className="mx-auto max-w-3xl px-6 py-12">
         {/* Header */}
         <header className="mb-10">
@@ -27,6 +27,7 @@ export default function NoRefundPolicy({
             No Refund Policy
           </h1>
           <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             <span className="font-medium">Effective Date:</span> {effectiveDate}
           </p>
         </header>
@@ -96,8 +97,9 @@ export default function NoRefundPolicy({
 function Section({ title, children }) {
   return (
     <section className="mt-10">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
       <div className="mt-3 text-base leading-7 text-gray-800 space-y-3">
+      <div className="mt-3 text-base leading-7 text-gray-800 dark:text-gray-200 space-y-3">
         {children}
       </div>
     </section>

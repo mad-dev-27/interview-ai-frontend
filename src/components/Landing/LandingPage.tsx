@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { Brain, Users, Award, TrendingUp, CheckCircle } from "lucide-react";
 import { Button } from "../ui/Button";
 import { PricingSection } from "./PricingSection";
+import { Footer } from "./Footer";
 import Cookies from "js-cookie";
 
 export const LandingPage: React.FC = () => {
@@ -212,6 +213,24 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Spacer Section */}
+      <div className="py-16 bg-gradient-to-r from-gray-100 via-blue-50 to-purple-50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-full px-6 py-3 shadow-lg"
+            >
+              <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <span className="text-gray-700 dark:text-gray-300 font-medium">
+                Trusted by thousands of job seekers
+              </span>
+            </motion.div>
+          </div>
+        </div>
+      </div>
       {/* Testimonials Section */}
       {/* Pricing Section */}
       <PricingSection />
@@ -241,6 +260,9 @@ export const LandingPage: React.FC = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
