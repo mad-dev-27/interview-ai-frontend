@@ -15,9 +15,10 @@ import TermsAndConditions from "./pages/terms&conditions";
 import CancellationRefund from "./pages/Cancellation&RefundPolicy";
 import ShippingDelivery from "./pages/shippingPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import { Contact } from "lucide-react";
 import ContactUs from "./pages/contactUs";
 import GoogleFormEmbed from "./pages/opinionSurvey";
+import InterviewHistory from "./pages/interviewHistory";
+import PaymentHistory from "./pages/paymentHistory";
 
 // Lazy-loaded pages/components
 const Dashboard = lazy(() => import("./pages/dashboard"));
@@ -108,6 +109,22 @@ function AppContent() {
         <Route path="/privacyPolicy" element={<PrivacyPolicy />} />
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/opinionSurvey" element={<GoogleFormEmbed />} />
+        <Route
+          path="/interview-history"
+          element={
+            <ProtectedRoute>
+              <InterviewHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-history"
+          element={
+            <ProtectedRoute>
+              <PaymentHistory />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Redirect any unknown routes to landing page */}
         <Route path="*" element={<Navigate to="/" replace />} />
