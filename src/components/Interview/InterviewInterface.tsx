@@ -418,6 +418,11 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
     setCurrentResponse("");
   };
 
+  const handleExit = async () => {
+    onComplete([]);
+    return;
+  };
+
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -631,8 +636,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                 </Button>
 
                 <Button
-                  onClick={handleNextQuestion}
-                  disabled={!currentResponse.trim() || disableAll}
+                  onClick={handleExit}
                   className="flex items-center space-x-2"
                 >
                   <span className="lg:text-md text-xs">Exit</span>

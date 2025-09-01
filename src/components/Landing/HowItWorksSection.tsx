@@ -22,9 +22,9 @@ export const HowItWorksSection: React.FC = () => {
     },
     {
       number: 3,
-      title: "Get AI-Generated Questions",
+      title: "Get Tailored Questions",
       description:
-        "Receive a tailored set of interview questions based on your resume and the role.",
+        "Receive custom questions from your resume and role, plus follow-ups that like a real interview.",
       icon: MessageCircle,
       color: "from-green-500 to-green-600",
     },
