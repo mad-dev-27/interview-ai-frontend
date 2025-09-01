@@ -31,11 +31,11 @@ export const Header: React.FC = () => {
             </span>
           </motion.div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <ThemeToggle />
             {user ? (
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 lg:space-x-3">
+                <div className="hidden lg:flex items-center space-x-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {"Hi, " + localStorage.getItem("name") || "Hi, User"}
                   </span>

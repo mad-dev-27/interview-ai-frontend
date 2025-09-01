@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Brain,
   Star,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { API_URL } from "../../config";
@@ -748,12 +749,16 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
         >
           <Button
             onClick={onRestart}
-            className="inline-flex items-center space-x-2"
+            className="inline-flex items-center mb-4 lg:mb-0 space-x-2"
           >
-            <RotateCcw size={16} />
-            <span>Practice Again</span>
+            <LayoutDashboard size={16} />
+            <span>Go to Dashboard</span>
           </Button>
-          <Button variant="outline" onClick={() => window.print()}>
+          <Button
+            className="hidden lg:inline"
+            variant="outline"
+            onClick={() => window.print()}
+          >
             Download Report
           </Button>
         </motion.div>

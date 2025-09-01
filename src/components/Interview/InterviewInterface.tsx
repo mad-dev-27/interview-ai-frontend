@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
 import axios from "axios";
+import MicSetupModal from "./InstructionsModal";
+import { MicChecker } from "./MicCheck";
 
 interface AudioChunk {
   blob: Blob;
@@ -33,6 +35,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [recordedChunks, setRecordedChunks] = useState<AudioChunk[]>([]);
   const [disableAll, setDisableAll] = useState(false);
   const [isLoadingNextQuestion, setIsLoadingNextQuestion] = useState(false);
+  const [showModal, setShowModal] = useState(true);
 
   const [setupFullScreen, setSetupFullScreen] = useState(false);
 
@@ -436,20 +439,50 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
       {!setupFullScreen ? (
-        <div className="flex flex-col justify-center items-center h-screen">
-          <p className="text-gray-600">Time Left </p>
-          <div className="flex items-center space-x-2 py-5 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <Clock size={16} />
-              <span>{formatTime(timeSpent)}</span>
+        <div className="flex flex-col h-screen justify-between px-6 py-6 md:py-8">
+          {/* Top Section */}
+          <div className="flex gap-4 items-center text-sm md:text-base">
+            <Clock size={18} />
+            <p className="text-gray-600 dark:text-gray-400">Time Left</p>
+            <span className="font-medium">{formatTime(timeSpent)}</span>
+          </div>
+
+          {/* Middle Section */}
+          <div className="flex flex-col justify-center items-center gap-6 flex-grow">
+            {showModal && (
+              <MicSetupModal onContinue={() => setShowModal(false)} />
+            )}
+            {!showModal && (
+              <p className="text-black dark:text-white text-lg font-medium text-center">
+                Please make sure your microphone is working before starting.
+              </p>
+            )}
+
+            <MicChecker />
+            {/* Instructions */}
+            <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-800 rounded-xl shadow-md p-4 text-sm md:text-base text-gray-700 dark:text-gray-300">
+              <h2 className="font-semibold text-black dark:text-white mb-2">
+                Instructions
+              </h2>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Find a quiet environment with minimal background noise.</li>
+                <li>
+                  Ensure your microphone is connected and working properly.
+                </li>
+                <li>Be ready to answer questions as naturally as possible.</li>
+              </ul>
             </div>
           </div>
-          <Button
-            onClick={enableSafeMode}
-            className="px-6 dark:bg-black py-3 text-lg font-semibold"
-          >
-            Start Interview
-          </Button>
+
+          {/* Bottom Section */}
+          <div className="flex justify-center pb-4 w-full">
+            <Button
+              onClick={enableSafeMode}
+              className="px-8 py-3 w-full sm:w-2/3 md:w-1/3 lg:w-1/4 dark:bg-black text-lg font-semibold rounded-xl shadow-md"
+            >
+              Start Interview
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -500,7 +533,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   </span>
                 </div>
 
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                <h2 className="lg:text-2xl text-xl font-bold text-gray-900 dark:text-white leading-tight whitespace-pre-line">
                   {currentQuestion.question}
                 </h2>
               </div>
@@ -545,7 +578,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   onChange={(e) => setCurrentResponse(e.target.value)}
                   readOnly={isRecording}
                   placeholder="🎤 Tap the mic to talk (your words will appear automatically — you can edit later) or just start typing…"
-                  className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full  h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
 
                 {isRecording && (
@@ -581,13 +614,13 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-4 items-center pt-4">
+              <div className="flex lg:justify-end justify-center gap-4 items-center pt-4">
                 <Button
                   onClick={handleNextQuestion}
                   disabled={isLoadingNextQuestion || disableAll}
-                  className="flex items-center space-x-2"
+                  className="flex items-center  space-x-2"
                 >
-                  <span>
+                  <span className="lg:text-md text-xs">
                     {isLoadingNextQuestion
                       ? "Processing..."
                       : currentQuestionIndex === questions.length - 1
@@ -602,7 +635,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   disabled={!currentResponse.trim() || disableAll}
                   className="flex items-center space-x-2"
                 >
-                  <span>Exit</span>
+                  <span className="lg:text-md text-xs">Exit</span>
                   <ArrowRight size={16} />
                 </Button>
               </div>

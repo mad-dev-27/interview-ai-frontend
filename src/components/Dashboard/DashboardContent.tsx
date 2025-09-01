@@ -7,7 +7,7 @@ import {
   MessageSquare,
   Briefcase,
   ShoppingCart,
-  History,
+  
   CreditCard,
 } from "lucide-react";
 import { Button } from "../ui/Button";
