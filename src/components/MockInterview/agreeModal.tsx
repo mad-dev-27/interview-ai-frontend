@@ -5,12 +5,12 @@ const InterviewRulesModal: React.FC<{ onAgree: () => void }> = ({
   onAgree,
 }) => {
   return createPortal(
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-[500px] p-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4 text-center">Interview Rules</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-white">Interview Rules</h2>
 
         <div className="space-y-4">
-          <p className="text-gray-700 text-sm leading-relaxed">
+          <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
             ⚠️ You will have <b>3 minutes</b> to set up your microphone and
             check if it is working properly. You can also test your microphone
             in advance using this{" "}
@@ -18,14 +18,14 @@ const InterviewRulesModal: React.FC<{ onAgree: () => void }> = ({
               href="https://mictests.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline"
+              className="text-blue-600 dark:text-blue-400 underline"
             >
               mic test website
             </a>{" "}
             to ensure a smooth experience.
           </p>
 
-          <ul className="list-disc list-inside text-gray-800 text-sm space-y-2">
+          <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 text-sm space-y-2">
             <li>
               Switching tabs or exiting fullscreen will result in{" "}
               <b>session termination</b>.
@@ -51,7 +51,7 @@ const InterviewRulesModal: React.FC<{ onAgree: () => void }> = ({
         {/* Agree & Continue */}
         <button
           onClick={onAgree}
-          className="mt-6 w-full py-3 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition"
+          className="mt-6 w-full py-3 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition"
         >
           Agree & Continue
         </button>

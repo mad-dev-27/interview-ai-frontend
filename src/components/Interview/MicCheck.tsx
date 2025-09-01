@@ -48,15 +48,15 @@ export const MicChecker: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-4 rounded-xl shadow bg-white w-full sm:w-2/3 md:w-1/3 lg:w-1/4 mt-4">
-      <p className="font-semibold text-center mb-2">Mic Level</p>
-      <div className="w-full h-4 bg-gray-200 rounded-xl overflow-hidden">
+    <div className="p-4 rounded-xl shadow bg-white dark:bg-gray-800 w-full sm:w-2/3 md:w-1/3 lg:w-1/4 mt-4 border border-gray-200 dark:border-gray-700">
+      <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Mic Level</p>
+      <div className="w-full h-4 bg-gray-200 dark:bg-gray-600 rounded-xl overflow-hidden">
         <div
           className="h-full bg-green-500 transition-all duration-100"
           style={{ width: `${Math.min(level, 100)}%` }}
         />
       </div>
-      <p className="text-sm text-center text-gray-600 mt-1">
+      <p className="text-sm text-center text-gray-600 dark:text-gray-400 mt-1">
         {level > 0 ? "🎤 Mic is working" : "🔇 No input"}
       </p>
     </div>

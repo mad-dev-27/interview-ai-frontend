@@ -465,8 +465,8 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
             <MicChecker />
             {/* Instructions */}
-            <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-800 rounded-xl shadow-md p-4 text-sm md:text-base text-gray-700 dark:text-gray-300">
-              <h2 className="font-semibold text-black dark:text-white mb-2">
+            <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-800 rounded-xl shadow-md p-4 text-sm md:text-base text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-2">
                 Instructions
               </h2>
               <ul className="list-disc list-inside space-y-1">
@@ -483,7 +483,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
           <div className="flex justify-center pb-4 w-full">
             <Button
               onClick={enableSafeMode}
-              className="px-8 py-3 w-full sm:w-2/3 md:w-1/3 lg:w-1/4 dark:bg-black text-lg font-semibold rounded-xl shadow-md"
+              className="px-8 py-3 w-full sm:w-2/3 md:w-1/3 lg:w-1/4 text-lg font-semibold rounded-xl shadow-md"
             >
               Start Interview
             </Button>
