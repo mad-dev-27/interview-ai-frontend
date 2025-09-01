@@ -20,6 +20,12 @@ interface InterviewRecord {
 const InterviewHistory: React.FC = () => {
   const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarData] = useState({
+    interviewLeft: 1,
+    completedInterview: 2,
+    totalInterview: 3,
+    recentActivity: [],
+  });
 
   // Mock data for demonstration
   useEffect(() => {
@@ -64,12 +70,6 @@ const InterviewHistory: React.FC = () => {
     }, 1000);
   }, []);
 
-  const sidebarData = {
-    recentInterviews: interviews.filter(i => i.status === "completed").length,
-    freeInterviewsLeft: 1,
-    totalInterviews: 5,
-  };
-
   const getScoreColor = (score: number) => {
     if (score >= 8) return "text-green-600 dark:text-green-400";
     if (score >= 6) return "text-yellow-600 dark:text-yellow-400";
@@ -110,7 +110,7 @@ const InterviewHistory: React.FC = () => {
     <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <Sidebar {...sidebarData} />
+        <Sidebar {...sidebarData} recentActivity={sidebarData.recentActivity} />
         
         <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
           <motion.div
