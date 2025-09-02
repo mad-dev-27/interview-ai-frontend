@@ -20,9 +20,9 @@ interface recentActivity {
 
 const Dashboard: React.FC = () => {
   const [sideBarData, setSideBarData] = useState({
-    interviewLeft: 1,
-    completedInterview: 2,
-    totalInterview: 3,
+    interviewLeft: 0,
+    completedInterview: 0,
+    totalInterview: 0,
   });
 
   const [recentActivity, setRecentActivity] = useState<recentActivity[]>([]);

@@ -175,7 +175,11 @@ export const AuthForm: React.FC = () => {
               </motion.p>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={googleAuthLoading}
+              className="w-full"
+            >
               {loading || googleAuthLoading
                 ? "Please wait..."
                 : isLogin
@@ -213,6 +217,7 @@ export const AuthForm: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
+              disabled={googleAuthLoading}
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
               {isLogin
