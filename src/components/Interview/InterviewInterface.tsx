@@ -6,7 +6,7 @@ import { useQuestionStore } from "../../store/interviewStore";
 import { toast } from "sonner";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import MicSetupModal from "./InstructionsModal";
 import { MicChecker } from "./MicCheck";
 import { useUserStore } from "../../store/userStore";
@@ -121,7 +121,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   }, [currentWarnings]);
 
   const updateWarnings = async () => {
-    if (enableProctorModeRef.current === false) return;
+    if (enableProctorModeRef.current === true) return;
     const sessionId = localStorage.getItem("sessionId") || "default-session";
     const updateInfo = await axios.put(
       API_URL + "/user/warning?sessionId=" + sessionId,
@@ -438,11 +438,10 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
       const token = Cookies.get("auth");
 
       const response = await axios.post(
-        `${API_URL}/user/nextQuestion?sessionId=${sessionId}`,
+        `${API_URL}/user/answer?sessionId=${sessionId}`,
         {
           questionId: currentQuestion.id,
-          response: currentResponse,
-          currentQuestionIndex,
+          userAnswer: currentResponse,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -466,10 +465,10 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
 
       // Move to next question
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } catch (error) {
-      console.error("Error getting next question:", error);
+    } catch (error: AxiosError) {
+      toast.error(error?.response?.data?.error);
       // If there's an error, just move to next question normally
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // setCurrentQuestionIndex(currentQuestionIndex + 1);
     } finally {
       setIsLoadingNextQuestion(false);
     }
@@ -588,16 +587,24 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-6"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium  bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`}
                   >
                     {"Easy"}
                   </span>
+
+                  {
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium  bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`}
+                    >
+                      {"followUP"}
+                    </span>
+                  }
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     {"Technical"}
                   </span>
-                </div>
+                </div> */}
 
                 <h2 className="lg:text-2xl text-xl font-bold text-gray-900 dark:text-white leading-tight whitespace-pre-line">
                   {currentQuestion.question}

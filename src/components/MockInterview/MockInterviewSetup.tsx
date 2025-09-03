@@ -11,7 +11,19 @@ import { useQuestionStore } from "../../store/interviewStore";
 import InterviewRulesModal from "./agreeModal";
 
 const MockInterviewSetup: React.FC = () => {
-  const [jobDescription, setJobDescription] = useState("");
+  const [jobDescription, setJobDescription] = useState(`About the job
+Company Description
+Acıbadem Health Point, part of the Acıbadem Healthcare Group, is Turkey's leading private healthcare organization, operating 24 hospitals and 18 outpatient clinics. With a dedicated team of nearly 22,500 employees, including 3,500 doctors and 4,000 nurses, Acıbadem offers high-quality healthcare services using advanced technology and modern infrastructure. The group, which began as a district hospital in 1991, has expanded internationally and now operates in five countries, with JCI accreditation ensuring high standards of care.
+Role Description
+This is a full-time remote role for a Frontend Developer. The Frontend Developer will be responsible for developing and implementing user interface components using modern web technologies. Day-to-day tasks include collaborating with designers and backend developers, creating responsive web designs, optimizing applications for maximum speed and scalability, and ensuring the technical feasibility of UI/UX designs.
+Qualifications
+Proficiency in Front-End Development and Responsive Web Design
+Experience with Back-End Web Development and general Web Development
+Solid understanding of Software Development principles
+Excellent problem-solving skills and attention to detail
+Ability to work independently and remotely
+Bachelor's degree in Computer Science, Information Technology, or a related field
+Experience in the healthcare industry is a plus`);
   const [resume, setResume] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [errors, setErrors] = useState<{

@@ -19,6 +19,8 @@ import { API_URL } from "../../config";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { useQuestionStore } from "../../store/interviewStore";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface ResultsPageProps {
   responses: string[];
@@ -175,6 +177,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
   const [loading, setLoading] = useState(true);
   const { questions } = useQuestionStore();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchResults = async () => {
       try {
@@ -182,15 +186,21 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
         const token = Cookies.get("auth");
 
         const response = await axios.get(
-          `${API_URL}/user/results?sessionId=${sessionId}`,
+          `${API_URL}/user/result?sessionId=${sessionId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
+        console.log(response);
+
         setOverallFeedback(response.data.overallFeedback);
         setQuestionFeedbacks(response.data.questionFeedbacks);
       } catch (error) {
+        toast.info(
+          "We couldn’t load your overall report right now. Please check your Interview History in the dashboard"
+        );
+        navigate("/");
         console.error("Error fetching results:", error);
         // Handle error appropriately
         console.error("Failed to fetch results");
