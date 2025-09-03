@@ -19,6 +19,9 @@ import ContactUs from "./pages/contactUs";
 import GoogleFormEmbed from "./pages/opinionSurvey";
 import InterviewHistory from "./pages/interviewHistory";
 import PaymentHistory from "./pages/paymentHistory";
+import StatusPage from "./pages/statusPage";
+import EmailVerifiedPage from "./pages/EmailVerifiedPage";
+import PromoPage from "./pages/promo";
 
 // Lazy-loaded pages/components
 const Dashboard = lazy(() => import("./pages/dashboard"));
@@ -29,7 +32,15 @@ const MockInterviewSetup = lazy(
 
 function AppContent() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      }
+    >
       <Routes>
         {/* Landing Page - Public Route */}
         <Route
@@ -109,6 +120,7 @@ function AppContent() {
         <Route path="/privacyPolicy" element={<PrivacyPolicy />} />
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/opinionSurvey" element={<GoogleFormEmbed />} />
+        <Route path="/status" element={<StatusPage />} />
         <Route
           path="/interview-history"
           element={
@@ -125,6 +137,9 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/email-verified" element={<EmailVerifiedPage />} />
+        <Route path="/promo" element={<PromoPage />} />
 
         {/* Redirect any unknown routes to landing page */}
         <Route path="*" element={<Navigate to="/" replace />} />

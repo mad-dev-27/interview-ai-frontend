@@ -3,26 +3,16 @@ import { motion } from "framer-motion";
 import { Clock, Zap, BarChart3, User } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { userActivityType } from "../../types/userStoreTypes";
 
 interface SidebarProps {
   interviewLeft: number;
   completedInterview: number;
   totalInterview: number;
-  recentActivity: recentActivity[];
+  recentActivity: userActivityType[];
 }
 
-interface recentActivity {
-  name: string;
-  id: string;
-  endTime: string;
-  isComplete: boolean;
-  isPreInterviewDone: boolean;
-  startTime: string;
-  status: string;
-  updatedAt: string;
-}
-
-const checkStatus = (item: recentActivity) => {
+const checkStatus = (item: userActivityType) => {
   if (item.isPreInterviewDone === true) {
     return "In Progress";
   }
@@ -160,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="space-y-3">
             {recentActivity.length > 0
               ? recentActivity
-                  .slice(0, 5) // ✅ restrict to 6
+                  .slice(0, 6) // ✅ restrict to 6
                   .map((item) =>
                     item.name !== "Undefined" ? (
                       <div
@@ -185,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     ) : null
                   )
               : null}
-            {recentActivity.length > 6 && (
+            {recentActivity.length >= 6 && (
               <div className="text-center mt-3">
                 <button
                   onClick={() => navigate("/interview-history")}

@@ -2,8 +2,16 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Header } from "../components/Layout/Header";
 import { Sidebar } from "../components/Dashboard/Sidebar";
-import { Calendar, Clock, Award, TrendingUp, Eye, FileText } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Award,
+  TrendingUp,
+  Eye,
+  FileText,
+} from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { useUserStore } from "../store/userStore";
 
 interface InterviewRecord {
   id: string;
@@ -20,12 +28,10 @@ interface InterviewRecord {
 const InterviewHistory: React.FC = () => {
   const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sidebarData] = useState({
-    interviewLeft: 1,
-    completedInterview: 2,
-    totalInterview: 3,
-    recentActivity: [],
-  });
+
+  const recentActivity = useUserStore((state) => state.userActivity);
+
+  const userStats = useUserStore((state) => state.userStats);
 
   // Mock data for demonstration
   useEffect(() => {
@@ -77,8 +83,10 @@ const InterviewHistory: React.FC = () => {
   };
 
   const getScoreBadgeColor = (score: number) => {
-    if (score >= 8) return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-    if (score >= 6) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+    if (score >= 8)
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    if (score >= 6)
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
     return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
   };
 
@@ -110,8 +118,8 @@ const InterviewHistory: React.FC = () => {
     <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <Sidebar {...sidebarData} recentActivity={sidebarData.recentActivity} />
-        
+        <Sidebar {...userStats} recentActivity={recentActivity} />
+
         <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -140,7 +148,9 @@ const InterviewHistory: React.FC = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Start your first mock interview to see your history here
                 </p>
-                <Button onClick={() => window.location.href = "/mock-interview"}>
+                <Button
+                  onClick={() => (window.location.href = "/mock-interview")}
+                >
                   Start First Interview
                 </Button>
               </motion.div>
@@ -160,19 +170,25 @@ const InterviewHistory: React.FC = () => {
                           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                             {interview.jobTitle}
                           </h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(interview.status)}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                              interview.status
+                            )}`}
+                          >
                             {interview.status}
                           </span>
                         </div>
-                        
+
                         <p className="text-gray-600 dark:text-gray-400">
                           {interview.company}
                         </p>
-                        
+
                         <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center space-x-1">
                             <Calendar size={16} />
-                            <span>{new Date(interview.date).toLocaleDateString()}</span>
+                            <span>
+                              {new Date(interview.date).toLocaleDateString()}
+                            </span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Clock size={16} />
@@ -180,22 +196,41 @@ const InterviewHistory: React.FC = () => {
                           </div>
                           <div className="flex items-center space-x-1">
                             <FileText size={16} />
-                            <span>{interview.questionsAnswered}/{interview.totalQuestions} questions</span>
+                            <span>
+                              {interview.questionsAnswered}/
+                              {interview.totalQuestions} questions
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center space-x-4">
                         <div className="text-center">
-                          <div className={`text-2xl font-bold ${getScoreColor(interview.score)}`}>
+                          <div
+                            className={`text-2xl font-bold ${getScoreColor(
+                              interview.score
+                            )}`}
+                          >
                             {interview.score}/10
                           </div>
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${getScoreBadgeColor(interview.score)}`}>
-                            {interview.score >= 8 ? "Excellent" : interview.score >= 6 ? "Good" : "Needs Work"}
+                          <div
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getScoreBadgeColor(
+                              interview.score
+                            )}`}
+                          >
+                            {interview.score >= 8
+                              ? "Excellent"
+                              : interview.score >= 6
+                              ? "Good"
+                              : "Needs Work"}
                           </div>
                         </div>
-                        
-                        <Button variant="outline" size="sm" className="flex items-center space-x-2">
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center space-x-2"
+                        >
                           <Eye size={16} />
                           <span>View Details</span>
                         </Button>
@@ -227,7 +262,14 @@ const InterviewHistory: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
-                    {interviews.length > 0 ? (interviews.reduce((acc, interview) => acc + interview.score, 0) / interviews.length).toFixed(1) : "0"}
+                    {interviews.length > 0
+                      ? (
+                          interviews.reduce(
+                            (acc, interview) => acc + interview.score,
+                            0
+                          ) / interviews.length
+                        ).toFixed(1)
+                      : "0"}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Average Score
@@ -235,7 +277,7 @@ const InterviewHistory: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
-                    {interviews.filter(i => i.score >= 8).length}
+                    {interviews.filter((i) => i.score >= 8).length}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Excellent Scores

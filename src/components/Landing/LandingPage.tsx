@@ -11,6 +11,8 @@ import { HowItWorksSection } from "./HowItWorksSection";
 import { FAQSection } from "./FAQSection";
 import { Link as ScrollLink } from "react-scroll";
 import axios from "axios";
+import { API_URL } from "../../config";
+import { usePricingStore } from "../../store/pricingStore";
 
 export const LandingPage: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -52,8 +54,13 @@ export const LandingPage: React.FC = () => {
     return () => ctx.revert();
   }, []);
 
+  const setPricing = usePricingStore((state) => state.setPricing);
+
   useEffect(() => {
     axios.get("https://verify.narendira.in/");
+    axios
+      .get(API_URL + "/user/pricing")
+      .then((res) => setPricing(res.data.pricing));
   }, []);
 
   const features = [

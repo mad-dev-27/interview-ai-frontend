@@ -6,65 +6,61 @@ import { API_URL } from "../config";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
-
-interface recentActivity {
-  name: string;
-  id: string;
-  endTime: string;
-  isComplete: boolean;
-  isPreInterviewDone: boolean;
-  startTime: string;
-  status: string;
-  updatedAt: string;
-}
+import { usePricingStore } from "../store/pricingStore";
+import { useUserStore } from "../store/userStore";
 
 const Dashboard: React.FC = () => {
-  const [sideBarData, setSideBarData] = useState({
-    interviewLeft: 0,
-    completedInterview: 0,
-    totalInterview: 0,
-  });
+  const setPricing = usePricingStore((state) => state.setPricing);
 
-  const [recentActivity, setRecentActivity] = useState<recentActivity[]>([]);
+  const setUserStats = useUserStore((state) => state.setUserStats);
+
+  const setUserActivity = useUserStore((state) => state.setUserActivity);
+
+  const setUserPayment = useUserStore((state) => state.setUserPayment);
+
+  const setMaxWarnings = useUserStore((state) => state.setMaxWarnings);
+
+  const recentActivity = useUserStore((state) => state.userActivity);
+
+  const userStats = useUserStore((state) => state.userStats);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const seconds = 10;
+    const seconds = 30;
 
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       getStats();
     }, seconds * 1000);
+
     const getStats = () => {
       axios
-        .get(API_URL + "/user/stats", {
+        .get(API_URL + "/user/info", {
           headers: { Authorization: "Bearer " + Cookies.get("auth") || "" },
         })
         .then((res) => {
-          setSideBarData(res.data);
-        })
-        .catch(() => {
-          toast.error("Cannot Fetch Details!!!");
-        });
-
-      axios
-        .get(API_URL + "/user/activity", {
-          headers: { Authorization: "Bearer " + Cookies.get("auth") || "" },
-        })
-        .then((res) => {
-          setRecentActivity(res.data.sessions);
+          setPricing(res.data.pricing);
+          setUserStats(res.data.userStats);
+          setUserPayment(res.data.userPayment);
+          setUserActivity(res.data.userActivity);
+          setMaxWarnings(res.data.maxWarnings);
+          // console.log(res.data);
+          setLoading(false);
         })
         .catch(() => {
           toast.error("Cannot Fetch Details!!!");
         });
     };
     getStats();
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <Sidebar {...sideBarData} recentActivity={recentActivity} />
-        <DashboardContent />
+        <Sidebar {...userStats} recentActivity={recentActivity} />
+        <DashboardContent loading={loading} />
       </div>
     </div>
   );

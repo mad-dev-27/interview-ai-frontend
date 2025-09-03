@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Briefcase,
   ShoppingCart,
-  
   CreditCard,
 } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -17,31 +16,15 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
-import { usePricingStore } from "../../store/pricingStore";
 
 // Add RazorPay type to the Window interface
 
-export const DashboardContent: React.FC = () => {
+export const DashboardContent = ({ loading }: { loading: boolean }) => {
   const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
 
   const [showPurchaseModal, setShowPurchaseModal] = React.useState(false);
-
-  const setPricing = usePricingStore((state) => state.setPricing);
-
-  useEffect(() => {
-    axios
-      .get(API_URL + "/user/pricing", {
-        headers: { Authorization: "Bearer " + Cookies.get("auth") },
-      })
-      .then((data) => {
-        setPricing(data.data.pricing);
-      })
-      .catch(() => {
-        toast.error("Error Fetching Price");
-      });
-  }, []);
 
   useEffect(() => {
     if (searchParams.get("type") === "purchase") {
@@ -113,7 +96,7 @@ export const DashboardContent: React.FC = () => {
         const toastId = toast.loading(
           "💳 Hang tight… just checking your payment ✨"
         );
-        console.log(response);
+        // console.log(response);
         axios
           .post(
             API_URL + "/payment/validate",
@@ -216,6 +199,15 @@ export const DashboardContent: React.FC = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="h-screen w-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto pb-20 lg:pb-8">
       <motion.div

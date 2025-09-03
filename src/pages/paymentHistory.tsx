@@ -12,6 +12,7 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { useUserStore } from "../store/userStore";
 
 interface PaymentRecord {
   id: string;
@@ -28,12 +29,10 @@ interface PaymentRecord {
 const PaymentHistory: React.FC = () => {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sidebarData] = useState({
-    interviewLeft: 1,
-    completedInterview: 2,
-    totalInterview: 3,
-    recentActivity: [],
-  });
+
+  const recentActivity = useUserStore((state) => state.userActivity);
+
+  const userStats = useUserStore((state) => state.userStats);
 
   // Mock data for demonstration
   useEffect(() => {
@@ -137,7 +136,7 @@ const PaymentHistory: React.FC = () => {
     <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <Sidebar {...sidebarData} recentActivity={sidebarData.recentActivity} />
+        <Sidebar {...userStats} recentActivity={recentActivity} />
 
         <div className="flex-1 h-full p-4 lg:p-8 overflow-y-auto">
           <motion.div

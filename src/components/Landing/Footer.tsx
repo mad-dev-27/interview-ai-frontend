@@ -20,6 +20,8 @@ export const Footer: React.FC = () => {
       links: [
         { name: "Contact Us", href: "/contactUs" },
         { name: "Opinion Survey", href: "/opinionSurvey" },
+        { name: "StatusPage", href: "/status" },
+        { name: "Promo", href: "/promo" },
       ],
     },
     {

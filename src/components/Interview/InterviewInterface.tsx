@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import MicSetupModal from "./InstructionsModal";
 import { MicChecker } from "./MicCheck";
+import { useUserStore } from "../../store/userStore";
 
 interface AudioChunk {
   blob: Blob;
@@ -37,12 +38,21 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [isLoadingNextQuestion, setIsLoadingNextQuestion] = useState(false);
   const [showModal, setShowModal] = useState(true);
 
+  const enableProctorModeRef = useRef(false);
+
   const [setupFullScreen, setSetupFullScreen] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const chunkTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const streamRef = useRef<MediaStream | null>(null);
+
+  const setCurrentWarnings = useUserStore((state) => state.setCurrentWarnings);
+
+  const currentWarnings = useUserStore((state) => state.currentWarnings);
+
+  const maximumWarnings = useUserStore((state) => state.maxWarnings);
 
   // FIX: keep an always-fresh flag to control segment restarts between onstop callbacks
   const isRecordingRef = useRef<boolean>(isRecording);
@@ -94,30 +104,78 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   }, [questionStartTime]);
 
   useEffect(() => {
-    // 🚨 Detect tab switch / window blur
-    const handleBlur = () => {
-      toast.error("🚨 You left the exam window!");
+    if (currentWarnings === 0) return;
+    if (currentWarnings >= maximumWarnings) {
+      toast.error("Closing the session maximum warning reached");
+      setCurrentWarnings(0);
+      handleExit();
+      return;
+    }
+    toast.warning(
+      "You have moved out of proctored mode " +
+        currentWarnings +
+        " of " +
+        maximumWarnings +
+        " warnings remaining"
+    );
+  }, [currentWarnings]);
+
+  const updateWarnings = async () => {
+    if (enableProctorModeRef.current === false) return;
+    const sessionId = localStorage.getItem("sessionId") || "default-session";
+    const updateInfo = await axios.put(
+      API_URL + "/user/warning?sessionId=" + sessionId,
+      {},
+      { headers: { Authorization: "Bearer " + Cookies.get("auth") } }
+    );
+    const info = await axios.get(
+      API_URL + "/user/warning?sessionId=" + sessionId,
+      {
+        headers: { Authorization: "Bearer " + Cookies.get("auth") },
+      }
+    );
+
+    setCurrentWarnings(info.data.count);
+
+    if (updateInfo.data.terminateSession === true) {
+      toast.error("Closing the session maximum warning reached");
+      setCurrentWarnings(0);
+      handleExit();
+      return;
+    }
+  };
+
+  useEffect(() => {
+    const handleBlur = async () => {
+      try {
+        await updateWarnings();
+        // toast.error("🚨 You left the exam window!");
+      } catch (err) {
+        console.log(err);
+      }
     };
 
-    // 🚨 Detect mouse leaving the exam window
-    const handleMouseLeave = () => {
-      toast.error("🚨 Cursor left the exam screen!");
-    };
+    // const handleMouseLeave = async (e) => {
+    //   if (!e.toElement && !e.relatedTarget) {
+    //     await updateWarnings();
+    //     // toast.error("🚨 Cursor left the exam screen!");
+    //   }
+    // };
 
-    // 🚨 Detect exiting fullscreen
-    const handleFullscreenChange = () => {
+    const handleFullscreenChange = async () => {
       if (!document.fullscreenElement) {
-        toast.error("🚨 You exited fullscreen!");
+        await updateWarnings();
+        // toast.error("🚨 You exited fullscreen!");
       }
     };
 
     window.addEventListener("blur", handleBlur);
-    window.addEventListener("mouseleave", handleMouseLeave);
+    // document.addEventListener("mouseout", handleMouseLeave);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
     return () => {
       window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("mouseleave", handleMouseLeave);
+      // document.removeEventListener("mouseout", handleMouseLeave);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
@@ -129,6 +187,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
       element.requestFullscreen();
       setSetupFullScreen(true);
     }
+    enableProctorModeRef.current = true;
   };
 
   // Send audio chunk to backend for transcription
@@ -447,9 +506,11 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
         <div className="flex flex-col h-screen justify-between px-6 py-6 md:py-8">
           {/* Top Section */}
           <div className="flex gap-4 items-center text-sm md:text-base">
-            <Clock size={18} />
-            <p className="text-gray-600 dark:text-gray-400">Time Left</p>
-            <span className="font-medium">{formatTime(timeSpent)}</span>
+            <Clock className="text-black dark:text-white" size={18} />
+            <p className="text-black dark:text-white">Time Left</p>
+            <span className="font-medium text-black dark:text-white">
+              {formatTime(timeSpent)}
+            </span>
           </div>
 
           {/* Middle Section */}
