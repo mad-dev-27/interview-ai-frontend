@@ -48,132 +48,46 @@ interface OverallFeedback {
 }
 
 interface QuestionFeedback {
-  msg: string;
-  llmFeedback: {
-    msg: string;
-    feedback: {
-      score: number;
-      strengths: string[];
-      areas_to_improve: string[];
-      suggested_answer: string;
-      confidence_analysis: {
-        tone: string;
-        filler_words: string;
-        clarity: string;
-        confidence_score: number;
-      };
-      follow_up_questions: string[];
-      final_feedback: string;
-    };
-  };
-  followUpQuestion: boolean;
-  followQuestion?: {
+  id: string;
+  isFollowUp: boolean;
+  question: string;
+  answer: {
     id: string;
-    question: string;
-    isFollowUp: boolean;
-    mainQuestionId?: string;
+    userAnswer: string;
+    llmResponse: {
+      msg: string;
+      feedback: {
+        score: number;
+        strengths: string[];
+        areas_to_improve: string[];
+        suggested_answer: string;
+        confidence_analysis: {
+          tone: string;
+          filler_words: string;
+          clarity: string;
+          confidence_score: number;
+        };
+        follow_up_questions: string[];
+        final_feedback: string;
+      };
+    };
   };
 }
 
-const defaultOverallFeedback = {
-  overall_score: 0 - 10,
-  strengths: [
-    "Explained technical concepts in simple, understandable language",
-    "Showed good familiarity with the core tools and frameworks relevant to the role",
-    "Displayed adaptability when questions were rephrased or challenged",
-    "Maintained professionalism and calm tone throughout",
-  ],
-  areas_to_improve: [
-    "Add more specific project-based examples to back up technical claims",
-    "Work on conciseness — some answers drifted before getting to the key point",
-    "Confidence dipped slightly in complex scenario questions — practice pausing and structuring thoughts before answering",
-    "Occasionally missed tying answers back to job role and responsibilities",
-  ],
-  analysis: {
-    communication:
-      "Generally clear, though occasional filler words reduced polish. Structuring answers with 'problem–solution–result' would help.",
-    technical_depth:
-      "Solid foundation, but some responses lacked depth in real-world application and trade-offs.",
-    confidence:
-      "Moderate to strong. Voice tone steady, but slight hesitation when unsure. Practicing mock Q&A under time pressure may help.",
-    relevance_to_role:
-      "Experience and skills align well, but some advanced role requirements were not fully demonstrated.",
-  },
-  interviewer_impression: {
-    positives: [
-      "Comes across as reliable and hardworking",
-      "Good cultural fit potential — collaborative and open",
-      "Willingness to learn and adapt is evident",
-    ],
-    concerns: [
-      "May need extra mentoring initially on advanced responsibilities",
-      "Sometimes struggled to highlight measurable impact of past work",
-    ],
-  },
-  final_recommendation: "Hire / Borderline / No Hire",
-  final_feedback:
-    "Overall, you demonstrated strong technical and interpersonal qualities, with clear potential to succeed in this role. Focusing on structuring your answers, reducing filler words, and backing up statements with specific examples will significantly elevate your performance. Keep practicing — you’re on the right track.",
-};
-
-const questionFeedBackDefaultObject = {
-  msg: "ok",
-  llmFeedback: {
-    msg: "ok",
-    feedback: {
-      score: 6,
-      strengths: [
-        "Identifies automatic scaling as a key benefit of Cloudflare Workers.",
-        "Correctly points out that cost is based on the number of requests in Cloudflare Workers.",
-      ],
-      areas_to_improve: [
-        "The explanation could be more detailed and structured.",
-        "Lacks specific benefits beyond scaling and cost, such as latency improvements and reduced operational overhead.",
-        "Doesn't mention the 'edge computing' aspect, which is a core advantage of Cloudflare Workers.",
-        "Needs clearer articulation and better organization for improved clarity.",
-      ],
-      suggested_answer:
-        "Cloudflare Workers were advantageous for the Arc blogging platform due to their ability to automatically scale, handling traffic spikes without manual intervention, which is more complex with traditional servers, where you'd need to configure auto-scaling groups. Also, Cloudflare Workers operate on a pay-per-request model, optimizing costs, especially during low-traffic periods. The distributed nature of Cloudflare's edge network reduces latency by serving content closer to users, enhancing the user experience. This setup also simplifies operational overhead, as server management is handled by Cloudflare, allowing more focus on application development.",
-      confidence_analysis: {
-        tone: "Neutral",
-        filler_words: "None",
-        clarity: "Moderately clear, but could be more structured.",
-        confidence_score: 6,
-      },
-      follow_up_questions: [
-        "How did Cloudflare Workers' serverless architecture impact the development and deployment workflow for the Arc blogging platform?",
-      ],
-      final_feedback:
-        "Your response touches on the scalability and cost benefits, but digging deeper into the architectural advantages and impact on user experience will significantly level up your answer.",
-    },
-  },
-  followUpQuestion: true,
-  followQuestion: {
-    id: "480cc339-5516-4137-8537-b8dd39585f1f",
-    interviewId: "eb981040-2d70-4fa1-aae0-cb932944e230",
-    question:
-      "How did Cloudflare Workers' serverless architecture impact the development and deployment workflow for the Arc blogging platform?",
-    resumeContent:
-      "Narendira is a Full-stack developer with proficiency in HTML, CSS, JavaScript, TypeScript, React.js, Node.js, Express.js, Prisma, Hono, Tailwind CSS, Bootstrap, Postgres, MongoDB, Git, Github, AWS, Cloud Flare, Docker, and Linux. He has experience building web applications with responsive designs and user authentication, as demonstrated by projects like Arc (blogging platform), Short URL (URL shortener), and Secure Pay (wallet-to-wallet payment system). He also has experience with Monorepos and Turborepo.",
-    jobDescriptionContent:
-      "The job description is for a Frontend Developer with experience in Front-End Development, Responsive Web Design, Back-End Web Development, and general Web Development. The role requires proficiency in software development principles, problem-solving, and independent work. Experience in the healthcare industry is a plus. The role involves developing user interface components, creating responsive web designs, and optimizing applications for speed and scalability.",
-    isFollowUp: true,
-    mainQuestionId: "6df5ac8e-d118-4fd8-928f-b9d3182aee3c",
-    isCompleted: false,
-    createdAt: "2025-08-29T12:38:38.872Z",
-    updatedAt: "2025-08-29T12:38:38.872Z",
-  },
-};
+interface ApiResponse {
+  overallFeedback: {
+    msg: string;
+    feedback: OverallFeedback;
+  };
+  questionFeedbacks: QuestionFeedback[];
+}
 
 export const ResultsPage: React.FC<ResultsPageProps> = ({
   responses,
-
   onRestart,
 }) => {
-  const [overallFeedback, setOverallFeedback] =
-    useState<OverallFeedback | null>(defaultOverallFeedback);
-  const [questionFeedbacks, setQuestionFeedbacks] = useState<
-    QuestionFeedback[]
-  >([questionFeedBackDefaultObject]);
+  const [overallFeedback, setOverallFeedback] = useState<OverallFeedback | null>(null);
+  const [questionFeedbacks, setQuestionFeedbacks] = useState<QuestionFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const { questions } = useQuestionStore();
 
@@ -194,16 +108,17 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
 
         console.log(response);
 
-        setOverallFeedback(response.data.overallFeedback);
-        setQuestionFeedbacks(response.data.questionFeedbacks);
+        const apiData: ApiResponse = response.data;
+        
+        // Extract the nested feedback objects
+        setOverallFeedback(apiData.overallFeedback.feedback);
+        setQuestionFeedbacks(apiData.questionFeedbacks);
       } catch (error) {
         toast.info(
-          "We couldn’t load your overall report right now. Please check your Interview History in the dashboard"
+          "We couldn't load your overall report right now. Please check your Interview History in the dashboard"
         );
         navigate("/");
         console.error("Error fetching results:", error);
-        // Handle error appropriately
-        console.error("Failed to fetch results");
       } finally {
         setLoading(false);
       }
@@ -470,7 +385,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
             <div className="space-y-6">
               {questionFeedbacks.map((item, index) => (
                 <motion.div
-                  key={index}
+                  key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 + index * 0.1 }}
@@ -482,33 +397,30 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                           Question {index + 1}
                         </h3>
-                        {item.followQuestion?.isFollowUp && (
+                        {item.isFollowUp && (
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-xs font-medium">
                             Follow-up
                           </span>
                         )}
                       </div>
                       <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        {item.followQuestion?.question ||
-                          questions[index]?.question ||
-                          "Question not available"}
+                        {item.question}
                       </p>
                     </div>
                     <div className="flex flex-col items-center">
                       <div
                         className={`text-2xl font-bold mb-1 ${getScoreColor(
-                          item.llmFeedback.feedback.score
+                          item.answer.llmResponse.feedback.score
                         )}`}
                       >
-                        {item.llmFeedback.feedback.score}/10
+                        {item.answer.llmResponse.feedback.score}/10
                       </div>
                       <div className="flex items-center">
                         {Array.from({ length: 5 }, (_, i) => (
                           <Star
                             key={i}
                             className={`w-4 h-4 ${
-                              i <
-                              Math.round(item.llmFeedback.feedback.score / 2)
+                              i < Math.round(item.answer.llmResponse.feedback.score / 2)
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300 dark:text-gray-600"
                             }`}
@@ -531,7 +443,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                             Tone:
                           </span>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                            {item.llmFeedback.feedback.confidence_analysis.tone}
+                            {item.answer.llmResponse.feedback.confidence_analysis.tone}
                           </p>
                         </div>
                         <div>
@@ -539,10 +451,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                             Clarity:
                           </span>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                            {
-                              item.llmFeedback.feedback.confidence_analysis
-                                .clarity
-                            }
+                            {item.answer.llmResponse.feedback.confidence_analysis.clarity}
                           </p>
                         </div>
                         <div>
@@ -550,10 +459,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                             Filler Words:
                           </span>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                            {
-                              item.llmFeedback.feedback.confidence_analysis
-                                .filler_words
-                            }
+                            {item.answer.llmResponse.feedback.confidence_analysis.filler_words}
                           </p>
                         </div>
                         <div>
@@ -562,15 +468,10 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                           </span>
                           <p
                             className={`font-medium ${getScoreColor(
-                              item.llmFeedback.feedback.confidence_analysis
-                                .confidence_score
+                              item.answer.llmResponse.feedback.confidence_analysis.confidence_score
                             )}`}
                           >
-                            {
-                              item.llmFeedback.feedback.confidence_analysis
-                                .confidence_score
-                            }
-                            /10
+                            {item.answer.llmResponse.feedback.confidence_analysis.confidence_score}/10
                           </p>
                         </div>
                       </div>
@@ -583,19 +484,20 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                       </h4>
                       <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-l-4 border-blue-500">
                         <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed italic">
-                          "{responses[index] || "No response recorded"}"
+                          "{item.answer.userAnswer || "No response recorded"}"
                         </p>
                       </div>
                     </div>
+
                     {/* Strengths */}
-                    {item.llmFeedback.feedback.strengths.length > 0 && (
+                    {item.answer.llmResponse.feedback.strengths.length > 0 && (
                       <div>
                         <h4 className="font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center">
                           <CheckCircle className="w-4 h-4 mr-2" />
                           What You Did Well
                         </h4>
                         <ul className="space-y-1">
-                          {item.llmFeedback.feedback.strengths.map(
+                          {item.answer.llmResponse.feedback.strengths.map(
                             (strength, strengthIndex) => (
                               <li
                                 key={strengthIndex}
@@ -613,14 +515,14 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                     )}
 
                     {/* Areas to Improve */}
-                    {item.llmFeedback.feedback.areas_to_improve.length > 0 && (
+                    {item.answer.llmResponse.feedback.areas_to_improve.length > 0 && (
                       <div>
                         <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-3 flex items-center">
                           <Target className="w-4 h-4 mr-2" />
                           Areas for Improvement
                         </h4>
                         <ul className="space-y-1">
-                          {item.llmFeedback.feedback.areas_to_improve.map(
+                          {item.answer.llmResponse.feedback.areas_to_improve.map(
                             (area, areaIndex) => (
                               <li
                                 key={areaIndex}
@@ -644,34 +546,33 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                         AI Feedback
                       </h4>
                       <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                        {item.llmFeedback.feedback.final_feedback}
+                        {item.answer.llmResponse.feedback.final_feedback}
                       </p>
                     </div>
 
                     {/* Suggested Answer */}
-                    {item.llmFeedback.feedback.suggested_answer && (
+                    {item.answer.llmResponse.feedback.suggested_answer && (
                       <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
                         <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                           <Lightbulb className="w-4 h-4 inline mr-2" />
                           Suggested Approach
                         </h4>
                         <p className="text-green-800 dark:text-green-200 text-sm leading-relaxed">
-                          {item.llmFeedback.feedback.suggested_answer}
+                          {item.answer.llmResponse.feedback.suggested_answer}
                         </p>
                       </div>
                     )}
 
                     {/* Follow-up Questions */}
-                    {item.llmFeedback.feedback.follow_up_questions &&
-                      item.llmFeedback.feedback.follow_up_questions.length >
-                        0 && (
+                    {item.answer.llmResponse.feedback.follow_up_questions &&
+                      item.answer.llmResponse.feedback.follow_up_questions.length > 0 && (
                         <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
                           <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
                             <MessageSquare className="w-4 h-4 inline mr-2" />
                             Potential Follow-up Questions
                           </h4>
                           <ul className="space-y-1">
-                            {item.llmFeedback.feedback.follow_up_questions.map(
+                            {item.answer.llmResponse.feedback.follow_up_questions.map(
                               (question, qIndex) => (
                                 <li
                                   key={qIndex}
@@ -708,7 +609,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                 {questionFeedbacks.length > 0
                   ? Math.round(
                       (questionFeedbacks.reduce(
-                        (acc, item) => acc + item.llmFeedback.feedback.score,
+                        (acc, item) => acc + item.answer.llmResponse.feedback.score,
                         0
                       ) /
                         questionFeedbacks.length) *
@@ -727,8 +628,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                       (questionFeedbacks.reduce(
                         (acc, item) =>
                           acc +
-                          item.llmFeedback.feedback.confidence_analysis
-                            .confidence_score,
+                          item.answer.llmResponse.feedback.confidence_analysis.confidence_score,
                         0
                       ) /
                         questionFeedbacks.length) *
@@ -750,6 +650,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
             </div>
           </div>
         </motion.div>
+
         {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0 }}
