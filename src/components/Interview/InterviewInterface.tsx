@@ -704,6 +704,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                 </Button>
 
                 <Button
+                  disabled={isLoadingNextQuestion || disableAll}
                   onClick={handleExit}
                   className="flex items-center space-x-2"
                 >

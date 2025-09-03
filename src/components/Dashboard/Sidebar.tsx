@@ -14,10 +14,10 @@ interface SidebarProps {
 
 const checkStatus = (item: userActivityType) => {
   if (item.isPreInterviewDone === true) {
+    if (item.isComplete === true) {
+      return "Complete";
+    }
     return "In Progress";
-  }
-  if (item.isComplete === true) {
-    return "Complete";
   }
 };
 
