@@ -467,8 +467,8 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } catch (error: AxiosError) {
       toast.error(error?.response?.data?.error);
-      // If there's an error, just move to next question normally
-      // setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // testing ignoring error for now
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } finally {
       setIsLoadingNextQuestion(false);
     }
