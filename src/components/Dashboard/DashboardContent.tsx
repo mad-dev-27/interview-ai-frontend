@@ -16,6 +16,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { API_URL } from "../../config";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
+import { jwtDecode } from "jwt-decode";
 
 // Add RazorPay type to the Window interface
 
@@ -78,19 +79,24 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
 
     toast.loading("🪟 Opening payment window...", { id: toastId });
 
+    const token = Cookies.get("auth");
+    if (!token) return;
+    const decoded = jwtDecode(token) as { name: string; email: string };
+
     const options = {
       key,
       amount: getOrderId.data.amount,
       currency: "INR",
       name: "Job Prep AI",
-      description: "Test Transaction",
+      description: `Purchase of ${quantity} interview${
+        quantity > 1 ? "s" : ""
+      } for ₹${price}`,
       image: window.location.origin + "/logo.png",
       order_id: getOrderId.data.id,
-      // prefill: {
-      //   name: "Narendira",
-      //   email: "Narendira2701@gmail.com",
-      //   contact: "9000090000",
-      // },
+      prefill: {
+        name: decoded.name,
+        email: decoded.email,
+      },
       // @ts-expect-error razorpay issue
       handler: function (response) {
         const toastId = toast.loading(
