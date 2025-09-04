@@ -91,7 +91,7 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
       description: `Purchase of ${quantity} interview${
         quantity > 1 ? "s" : ""
       } for ₹${price}`,
-      image: window.location.origin + "/logo.png",
+      image: window.location.origin + "/icon.png",
       order_id: getOrderId.data.id,
       prefill: {
         name: decoded.name,
