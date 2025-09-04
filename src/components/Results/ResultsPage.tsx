@@ -82,14 +82,13 @@ interface ApiResponse {
   questionFeedbacks: QuestionFeedback[];
 }
 
-export const ResultsPage: React.FC<ResultsPageProps> = ({
-  responses,
-  onRestart,
-}) => {
-  const [overallFeedback, setOverallFeedback] = useState<OverallFeedback | null>(null);
-  const [questionFeedbacks, setQuestionFeedbacks] = useState<QuestionFeedback[]>([]);
+export const ResultsPage: React.FC<ResultsPageProps> = ({ onRestart }) => {
+  const [overallFeedback, setOverallFeedback] =
+    useState<OverallFeedback | null>(null);
+  const [questionFeedbacks, setQuestionFeedbacks] = useState<
+    QuestionFeedback[]
+  >([]);
   const [loading, setLoading] = useState(true);
-  const { questions } = useQuestionStore();
 
   const navigate = useNavigate();
 
@@ -109,7 +108,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
         console.log(response);
 
         const apiData: ApiResponse = response.data;
-        
+
         // Extract the nested feedback objects
         setOverallFeedback(apiData.overallFeedback.feedback);
         setQuestionFeedbacks(apiData.questionFeedbacks);
@@ -117,7 +116,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
         toast.info(
           "We couldn't load your overall report right now. Please check your Interview History in the dashboard"
         );
-        navigate("/");
+        navigate("/dashboard");
         console.error("Error fetching results:", error);
       } finally {
         setLoading(false);
@@ -229,7 +228,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
             >
               {overallFeedback.final_recommendation}
             </div>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-4xl mx-auto">
               {overallFeedback.final_feedback}
             </p>
           </div>
@@ -420,7 +419,10 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                           <Star
                             key={i}
                             className={`w-4 h-4 ${
-                              i < Math.round(item.answer.llmResponse.feedback.score / 2)
+                              i <
+                              Math.round(
+                                item.answer.llmResponse.feedback.score / 2
+                              )
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300 dark:text-gray-600"
                             }`}
@@ -443,7 +445,10 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                             Tone:
                           </span>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                            {item.answer.llmResponse.feedback.confidence_analysis.tone}
+                            {
+                              item.answer.llmResponse.feedback
+                                .confidence_analysis.tone
+                            }
                           </p>
                         </div>
                         <div>
@@ -451,7 +456,10 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                             Clarity:
                           </span>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                            {item.answer.llmResponse.feedback.confidence_analysis.clarity}
+                            {
+                              item.answer.llmResponse.feedback
+                                .confidence_analysis.clarity
+                            }
                           </p>
                         </div>
                         <div>
@@ -459,7 +467,10 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                             Filler Words:
                           </span>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                            {item.answer.llmResponse.feedback.confidence_analysis.filler_words}
+                            {
+                              item.answer.llmResponse.feedback
+                                .confidence_analysis.filler_words
+                            }
                           </p>
                         </div>
                         <div>
@@ -468,10 +479,15 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                           </span>
                           <p
                             className={`font-medium ${getScoreColor(
-                              item.answer.llmResponse.feedback.confidence_analysis.confidence_score
+                              item.answer.llmResponse.feedback
+                                .confidence_analysis.confidence_score
                             )}`}
                           >
-                            {item.answer.llmResponse.feedback.confidence_analysis.confidence_score}/10
+                            {
+                              item.answer.llmResponse.feedback
+                                .confidence_analysis.confidence_score
+                            }
+                            /10
                           </p>
                         </div>
                       </div>
@@ -515,7 +531,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                     )}
 
                     {/* Areas to Improve */}
-                    {item.answer.llmResponse.feedback.areas_to_improve.length > 0 && (
+                    {item.answer.llmResponse.feedback.areas_to_improve.length >
+                      0 && (
                       <div>
                         <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-3 flex items-center">
                           <Target className="w-4 h-4 mr-2" />
@@ -565,7 +582,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
 
                     {/* Follow-up Questions */}
                     {item.answer.llmResponse.feedback.follow_up_questions &&
-                      item.answer.llmResponse.feedback.follow_up_questions.length > 0 && (
+                      item.answer.llmResponse.feedback.follow_up_questions
+                        .length > 0 && (
                         <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
                           <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
                             <MessageSquare className="w-4 h-4 inline mr-2" />
@@ -609,7 +627,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                 {questionFeedbacks.length > 0
                   ? Math.round(
                       (questionFeedbacks.reduce(
-                        (acc, item) => acc + item.answer.llmResponse.feedback.score,
+                        (acc, item) =>
+                          acc + item.answer.llmResponse.feedback.score,
                         0
                       ) /
                         questionFeedbacks.length) *
@@ -628,7 +647,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                       (questionFeedbacks.reduce(
                         (acc, item) =>
                           acc +
-                          item.answer.llmResponse.feedback.confidence_analysis.confidence_score,
+                          item.answer.llmResponse.feedback.confidence_analysis
+                            .confidence_score,
                         0
                       ) /
                         questionFeedbacks.length) *

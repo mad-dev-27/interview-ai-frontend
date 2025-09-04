@@ -121,7 +121,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   }, [currentWarnings]);
 
   const updateWarnings = async () => {
-    if (enableProctorModeRef.current === true) return;
+    if (enableProctorModeRef.current === false) return;
     const sessionId = localStorage.getItem("sessionId") || "default-session";
     const updateInfo = await axios.put(
       API_URL + "/user/warning?sessionId=" + sessionId,
