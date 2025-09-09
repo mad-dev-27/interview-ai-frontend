@@ -32,7 +32,7 @@ export const PricingSection: React.FC = () => {
     },
     {
       name: "Per Interview",
-      price: "₹150",
+      price: "₹200",
       description: "Pay per interview with full features",
       icon: Crown,
       features: [
