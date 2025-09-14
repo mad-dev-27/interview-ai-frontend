@@ -2,78 +2,22 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Header } from "../components/Layout/Header";
 import { Sidebar } from "../components/Dashboard/Sidebar";
-import {
-  Calendar,
-  Clock,
-  Award,
-  TrendingUp,
-  Eye,
-  FileText,
-} from "lucide-react";
+import { Calendar, Clock, Eye, FileText } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { useUserStore } from "../store/userStore";
-
-interface InterviewRecord {
-  id: string;
-  date: string;
-  jobTitle: string;
-  company: string;
-  score: number;
-  duration: string;
-  status: "completed" | "in-progress" | "cancelled";
-  questionsAnswered: number;
-  totalQuestions: number;
-}
+import { useNavigate } from "react-router-dom";
 
 const InterviewHistory: React.FC = () => {
-  const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const recentActivity = useUserStore((state) => state.userActivity);
 
   const userStats = useUserStore((state) => state.userStats);
 
-  // Mock data for demonstration
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setInterviews([
-        {
-          id: "1",
-          date: "2025-01-15",
-          jobTitle: "Frontend Developer",
-          company: "Tech Corp",
-          score: 8.5,
-          duration: "45 min",
-          status: "completed",
-          questionsAnswered: 12,
-          totalQuestions: 12,
-        },
-        {
-          id: "2",
-          date: "2025-01-12",
-          jobTitle: "Full Stack Developer",
-          company: "StartupCo",
-          score: 7.2,
-          duration: "38 min",
-          status: "completed",
-          questionsAnswered: 10,
-          totalQuestions: 10,
-        },
-        {
-          id: "3",
-          date: "2025-01-10",
-          jobTitle: "React Developer",
-          company: "Innovation Labs",
-          score: 9.1,
-          duration: "42 min",
-          status: "completed",
-          questionsAnswered: 15,
-          totalQuestions: 15,
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    setLoading(false);
   }, []);
 
   const getScoreColor = (score: number) => {
@@ -102,6 +46,23 @@ const InterviewHistory: React.FC = () => {
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
+
+  function formatDuration(start: Date, end: Date) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    // @ts-expect-error ts issue
+    const diffMs = endDate - startDate;
+
+    if (diffMs < 0) {
+      return "Invalid time range";
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${minutes}m ${seconds}s`;
+  }
 
   if (loading) {
     return (
@@ -135,7 +96,7 @@ const InterviewHistory: React.FC = () => {
               </p>
             </div>
 
-            {interviews.length === 0 ? (
+            {recentActivity.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -156,88 +117,98 @@ const InterviewHistory: React.FC = () => {
               </motion.div>
             ) : (
               <div className="space-y-6">
-                {interviews.map((interview, index) => (
-                  <motion.div
-                    key={interview.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center space-x-3">
-                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            {interview.jobTitle}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
-                              interview.status
-                            )}`}
-                          >
-                            {interview.status}
-                          </span>
+                {recentActivity.map((interview, index) => {
+                  if (interview.score !== null)
+                    return (
+                      <motion.div
+                        key={interview.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300"
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center space-x-3">
+                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                {interview.name}
+                              </h3>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                                  interview.status.toLowerCase()
+                                )}`}
+                              >
+                                {interview.status}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center space-x-1">
+                                <Calendar size={16} />
+                                <span>
+                                  {new Date(
+                                    interview.startTime
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Clock size={16} />
+
+                                <span>
+                                  {formatDuration(
+                                    interview.startTime,
+                                    interview.endTime
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <FileText size={16} />
+                                <span>
+                                  {interview.answeredQuestions}/
+                                  {interview.questionsLength} questions
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-4">
+                            <div className="text-center">
+                              <div
+                                className={`text-2xl font-bold ${getScoreColor(
+                                  interview.score
+                                )}`}
+                              >
+                                {interview.score}/10
+                              </div>
+                              <div
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${getScoreBadgeColor(
+                                  interview.score
+                                )}`}
+                              >
+                                {interview.score >= 8
+                                  ? "Excellent"
+                                  : interview.score >= 6
+                                  ? "Good"
+                                  : "Needs Work"}
+                              </div>
+                            </div>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center space-x-2"
+                              onClick={() =>
+                                navigate("/result?id=" + interview.id)
+                              }
+                            >
+                              <Eye size={16} />
+                              <span>View Details</span>
+                            </Button>
+                          </div>
                         </div>
-
-                        <p className="text-gray-600 dark:text-gray-400">
-                          {interview.company}
-                        </p>
-
-                        <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center space-x-1">
-                            <Calendar size={16} />
-                            <span>
-                              {new Date(interview.date).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Clock size={16} />
-                            <span>{interview.duration}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <FileText size={16} />
-                            <span>
-                              {interview.questionsAnswered}/
-                              {interview.totalQuestions} questions
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4">
-                        <div className="text-center">
-                          <div
-                            className={`text-2xl font-bold ${getScoreColor(
-                              interview.score
-                            )}`}
-                          >
-                            {interview.score}/10
-                          </div>
-                          <div
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getScoreBadgeColor(
-                              interview.score
-                            )}`}
-                          >
-                            {interview.score >= 8
-                              ? "Excellent"
-                              : interview.score >= 6
-                              ? "Good"
-                              : "Needs Work"}
-                          </div>
-                        </div>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center space-x-2"
-                        >
-                          <Eye size={16} />
-                          <span>View Details</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      </motion.div>
+                    );
+                })}
               </div>
             )}
 
@@ -254,7 +225,13 @@ const InterviewHistory: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                    {interviews.length}
+                    {
+                      recentActivity.filter(
+                        (interview) =>
+                          interview.score !== null &&
+                          interview.score !== undefined
+                      ).length
+                    }
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Total Interviews
@@ -262,13 +239,23 @@ const InterviewHistory: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
-                    {interviews.length > 0
-                      ? (
-                          interviews.reduce(
+                    {recentActivity.length > 0
+                      ? (() => {
+                          const validScores = recentActivity.filter(
+                            (interview) =>
+                              interview.score !== null &&
+                              interview.score !== undefined
+                          );
+
+                          if (validScores.length === 0) return "0";
+
+                          const total = validScores.reduce(
                             (acc, interview) => acc + interview.score,
                             0
-                          ) / interviews.length
-                        ).toFixed(1)
+                          );
+
+                          return (total / validScores.length).toFixed(1);
+                        })()
                       : "0"}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -277,7 +264,7 @@ const InterviewHistory: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
-                    {interviews.filter((i) => i.score >= 8).length}
+                    {recentActivity.filter((i) => i.score >= 8).length}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Excellent Scores

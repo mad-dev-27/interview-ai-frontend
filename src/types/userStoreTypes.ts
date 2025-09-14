@@ -12,7 +12,10 @@ export type userActivityType = {
   startTime: Date;
   endTime: Date;
   status: string;
+  score: number;
   updatedAt: Date;
+  questionsLength: number;
+  answeredQuestions: number;
 };
 
 type userPaymentType = {

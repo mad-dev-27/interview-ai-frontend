@@ -22,6 +22,7 @@ import PaymentHistory from "./pages/paymentHistory";
 import StatusPage from "./pages/statusPage";
 import EmailVerifiedPage from "./pages/EmailVerifiedPage";
 import PromoPage from "./pages/promo";
+import ResultPage from "./pages/resultPage";
 
 // Lazy-loaded pages/components
 const Dashboard = lazy(() => import("./pages/dashboard"));
@@ -54,7 +55,7 @@ function AppContent() {
         />
         {/* Auth Page - Public Route */}
         <Route path="/auth" element={<AuthForm />} />
-        {/* Mock Interview Setup - Public Route */}
+        {/* Mock Interview Setup   */}
         <Route
           path="/mock-interview"
           element={
@@ -69,6 +70,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <InterviewFlow />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/result"
+          element={
+            <ProtectedRoute>
+              <ResultPage />
             </ProtectedRoute>
           }
         />
