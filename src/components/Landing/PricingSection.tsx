@@ -41,8 +41,6 @@ export const PricingSection: React.FC = () => {
         "Advanced analytics dashboard",
         "Industry-specific questions",
         "Personalized improvement suggestions",
-        "Video recording & playback",
-        "Unlimited practice time",
       ],
       limitations: [],
       buttonText: "Buy Interview",
