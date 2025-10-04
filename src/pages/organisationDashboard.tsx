@@ -119,12 +119,17 @@ const OrganisationDashboard: React.FC = () => {
     { date: 'Oct 02', averageScore: 78.5, averageConfidence: 75.8, averageAnswerScore: 82.3, completedQuestions: 84 },
   ];
 
-  const heatMapData: HeatMapData[] = Array.from({ length: 84 }, (_, i) => ({
-    date: new Date(2025, 7, i + 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    count: Math.floor(Math.random() * 10),
-    day: i % 7,
-    week: Math.floor(i / 7),
-  }));
+  const generateMonthData = (year: number, month: number): HeatMapData[] => {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+
+    return Array.from({ length: daysInMonth }, (_, i) => ({
+      date: new Date(year, month, i + 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      count: Math.floor(Math.random() * 10),
+      day: (firstDay + i) % 7,
+      dayOfMonth: i + 1,
+    }));
+  };
 
   const improvementAreas: ImprovementArea[] = [
     { area: 'Communication Skills', count: 28, percentage: 62.2 },
@@ -272,7 +277,7 @@ const OrganisationDashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <TopPerformers students={filteredStudents.length > 0 ? filteredStudents : students} />
+          <TopPerformers students={students} />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -280,33 +285,102 @@ const OrganisationDashboard: React.FC = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
+            className="lg:col-span-1"
           >
-            <HeatMap data={heatMapData} />
+            <PerformanceChart data={performanceTrends} />
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
+            className="lg:col-span-1"
+          >
+            <HeatMap generateMonthData={generateMonthData} />
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
           >
             <AreasOfImprovement areas={improvementAreas} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Engagement Metrics
+              </h2>
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Average Practice Time</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">42 min</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">per session</p>
+                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">+12% this month</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
+                      <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">87%</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">of started interviews</p>
+                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">+5% this month</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Active Students</p>
+                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">38/45</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">in last 7 days</p>
+                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">84% active</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Improvement Rate</p>
+                      <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">+15%</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">avg score increase</p>
+                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">month over month</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <PerformanceChart data={performanceTrends} />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <StudentsList students={filteredStudents.length > 0 ? filteredStudents : students} />
+          <StudentsList students={students} />
         </motion.div>
       </div>
     </div>

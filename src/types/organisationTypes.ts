@@ -34,7 +34,7 @@ export interface HeatMapData {
   date: string;
   count: number;
   day: number;
-  week: number;
+  dayOfMonth?: number;
 }
 
 export interface ImprovementArea {

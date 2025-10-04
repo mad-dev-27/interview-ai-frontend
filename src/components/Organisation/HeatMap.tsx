@@ -1,14 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HeatMapData } from '../../types/organisationTypes';
 
 interface HeatMapProps {
-  data: HeatMapData[];
+  generateMonthData: (year: number, month: number) => HeatMapData[];
 }
 
-export const HeatMap: React.FC<HeatMapProps> = ({ data }) => {
-  const [hoveredCell, setHoveredCell] = React.useState<{ week: number; day: number } | null>(null);
+export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [hoveredCell, setHoveredCell] = React.useState<{ day: number } | null>(null);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const data = generateMonthData(year, month);
+
+  const handlePreviousMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const getIntensityColor = (count: number) => {
     if (count === 0) return 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
@@ -18,86 +33,126 @@ export const HeatMap: React.FC<HeatMapProps> = ({ data }) => {
     return 'bg-emerald-800 dark:bg-emerald-400 border-emerald-900 dark:border-emerald-300';
   };
 
-  const weeks = Array.from({ length: 12 }, (_, i) => i);
-  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
-  const getDataForCell = (week: number, day: number) => {
-    return data.find(d => d.week === week && d.day === day);
-  };
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const maxCount = Math.max(...data.map(d => d.count), 1);
   const totalInterviews = data.reduce((sum, d) => sum + d.count, 0);
 
+  const weeksArray = [];
+  let currentWeek = [];
+
+  for (let i = 0; i < firstDay; i++) {
+    currentWeek.push(null);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    currentWeek.push(day);
+    if (currentWeek.length === 7) {
+      weeksArray.push(currentWeek);
+      currentWeek = [];
+    }
+  }
+
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push(null);
+    }
+    weeksArray.push(currentWeek);
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            Activity Heatmap
-          </h2>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Activity Calendar
+            </h2>
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                onClick={handlePreviousMonth}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              </button>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px] text-center">
+                {monthName}
+              </p>
+              <button
+                onClick={handleNextMonth}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+          </div>
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalInterviews}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Total Interviews</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">This Month</p>
         </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full">
-          <div className="flex gap-2 justify-center">
-            <div className="flex flex-col justify-around gap-2 pt-6">
-              {days.map((day) => (
-                <div
-                  key={day}
-                  className="h-6 text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center justify-end pr-2"
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-7 gap-2 mb-2">
+            {days.map((day) => (
+              <div
+                key={day}
+                className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
 
-            <div className="flex gap-2">
-              {weeks.map((week) => (
-                <div key={week} className="flex flex-col gap-2">
-                  <div className="h-6 text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                    W{week + 1}
-                  </div>
-                  {days.map((_, dayIndex) => {
-                    const cellData = getDataForCell(week, dayIndex);
-                    const count = cellData?.count || 0;
-                    const isHovered = hoveredCell?.week === week && hoveredCell?.day === dayIndex;
+          <div className="grid gap-2">
+            {weeksArray.map((week, weekIndex) => (
+              <div key={weekIndex} className="grid grid-cols-7 gap-2">
+                {week.map((day, dayIndex) => {
+                  if (day === null) {
+                    return <div key={`empty-${weekIndex}-${dayIndex}`} className="w-full h-12" />;
+                  }
 
-                    return (
-                      <motion.div
-                        key={`${week}-${dayIndex}`}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: (week * 7 + dayIndex) * 0.005 }}
-                        whileHover={{ scale: 1.15, zIndex: 10 }}
-                        className={`w-6 h-6 rounded-md border-2 ${getIntensityColor(count)} cursor-pointer transition-all relative`}
-                        onMouseEnter={() => setHoveredCell({ week, day: dayIndex })}
-                        onMouseLeave={() => setHoveredCell(null)}
-                      >
-                        {isHovered && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none z-50"
-                          >
-                            <div className="font-semibold">{cellData ? cellData.date : 'No data'}</div>
-                            <div className="text-gray-300">{count} interviews</div>
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                              <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+                  const cellData = data.find(d => d.dayOfMonth === day);
+                  const count = cellData?.count || 0;
+                  const isHovered = hoveredCell?.day === day;
+
+                  return (
+                    <motion.div
+                      key={`${weekIndex}-${day}`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: day * 0.01 }}
+                      whileHover={{ scale: 1.05 }}
+                      className={`w-full h-12 rounded-lg border-2 ${getIntensityColor(count)} cursor-pointer transition-all relative flex items-center justify-center`}
+                      onMouseEnter={() => setHoveredCell({ day })}
+                      onMouseLeave={() => setHoveredCell(null)}
+                    >
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                        {day}
+                      </span>
+                      {isHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none z-50"
+                        >
+                          <div className="font-semibold">{cellData ? cellData.date : 'No data'}</div>
+                          <div className="text-gray-300">{count} interviews</div>
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                            <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
           <div className="flex items-center justify-center gap-3 mt-6 text-xs text-gray-600 dark:text-gray-400">
