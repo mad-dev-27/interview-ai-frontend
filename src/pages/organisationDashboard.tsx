@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Download, RefreshCw, Building2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Building2, X } from 'lucide-react';
 import { StatCards } from '../components/Organisation/StatCards';
 import { StudentsList } from '../components/Organisation/StudentsList';
 import { HeatMap } from '../components/Organisation/HeatMap';
@@ -18,7 +18,7 @@ import {
 
 const OrganisationDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const stats: OrganisationStats = {
     interviewsRemaining: 'unlimited',
@@ -140,17 +140,6 @@ const OrganisationDashboard: React.FC = () => {
       student.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1000);
-  };
-
-  const handleExport = () => {
-    console.log('Exporting data...');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-[1600px] mx-auto p-4 lg:p-8 space-y-6">
@@ -170,38 +159,105 @@ const OrganisationDashboard: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 sm:min-w-[300px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search students by name or email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-
-              <Button
-                onClick={handleExport}
-                variant="primary"
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Export
-              </Button>
-            </div>
+            <Button
+              onClick={() => setIsSearchModalOpen(true)}
+              variant="outline"
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              <Search className="w-4 h-4" />
+              Search Students
+            </Button>
           </div>
         </motion.div>
+
+        <AnimatePresence>
+          {isSearchModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4"
+              onClick={() => setIsSearchModalOpen(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: -20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: -20 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Search Students
+                    </h3>
+                    <button
+                      onClick={() => setIsSearchModalOpen(false)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search by name or email..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                    />
+                  </div>
+
+                  {searchQuery && (
+                    <div className="mt-4 max-h-96 overflow-y-auto">
+                      {filteredStudents.length > 0 ? (
+                        <div className="space-y-2">
+                          {filteredStudents.map((student) => (
+                            <motion.div
+                              key={student.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                              onClick={() => {
+                                setIsSearchModalOpen(false);
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-semibold text-gray-900 dark:text-white">
+                                    {student.name}
+                                  </p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {student.email}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                    {student.averageScore.toFixed(1)}%
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {student.completedInterviews} interviews
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                          No students found matching your search.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
