@@ -30,6 +30,7 @@ const InterviewFlow = lazy(() => import("./pages/interview"));
 const MockInterviewSetup = lazy(
   () => import("./components/MockInterview/MockInterviewSetup")
 );
+const OrganisationDashboard = lazy(() => import("./pages/organisationDashboard"));
 
 function AppContent() {
   return (
@@ -143,6 +144,15 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <PaymentHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/organisation-dashboard"
+          element={
+            <ProtectedRoute>
+              <OrganisationDashboard />
             </ProtectedRoute>
           }
         />

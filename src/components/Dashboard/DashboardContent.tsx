@@ -207,8 +207,8 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
       icon: Building2,
       title: "Organisation Dashboard",
       description: "Monitor team performance and manage organization resources",
-      action: "Coming soon",
-      onClick: () => {},
+      action: "View Dashboard",
+      onClick: () => navigate("/organisation-dashboard"),
     },
     {
       icon: UserIcon,
