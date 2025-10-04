@@ -63,7 +63,7 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full flex flex-col">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col" style={{ minHeight: '500px', maxHeight: '500px' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -96,7 +96,7 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center overflow-hidden">
         <div className="w-full">
           <div className="grid grid-cols-7 gap-2 mb-2">
             {days.map((day) => (
@@ -109,8 +109,8 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
             ))}
           </div>
 
-          <div className="grid gap-2">
-            {weeksArray.map((week, weekIndex) => (
+          <div className="grid gap-2" style={{ minHeight: '336px', maxHeight: '336px' }}>
+            {weeksArray.slice(0, 6).map((week, weekIndex) => (
               <div key={weekIndex} className="grid grid-cols-7 gap-2">
                 {week.map((day, dayIndex) => {
                   if (day === null) {

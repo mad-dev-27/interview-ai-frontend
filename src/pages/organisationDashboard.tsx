@@ -181,7 +181,7 @@ const OrganisationDashboard: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4"
+              className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4"
               onClick={() => setIsSearchModalOpen(false)}
             >
               <motion.div
@@ -316,58 +316,53 @@ const OrganisationDashboard: React.FC = () => {
           >
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Engagement Metrics
+                Student Distribution
               </h2>
-              <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Average Practice Time</p>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">42 min</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">per session</p>
-                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">+12% this month</p>
-                    </div>
+              <div className="space-y-3">
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Excellent (80-100%)</p>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">18 students</p>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="bg-emerald-600 dark:bg-emerald-400 h-2 rounded-full" style={{ width: '40%' }}></div>
                   </div>
                 </div>
 
-                <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
-                      <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">87%</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">of started interviews</p>
-                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">+5% this month</p>
-                    </div>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Good (70-79%)</p>
+                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400">15 students</p>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full" style={{ width: '33%' }}></div>
                   </div>
                 </div>
 
                 <div className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Active Students</p>
-                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">38/45</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">in last 7 days</p>
-                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">84% active</p>
-                    </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Average (60-69%)</p>
+                    <p className="text-lg font-bold text-amber-600 dark:text-amber-400">8 students</p>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="bg-amber-600 dark:bg-amber-400 h-2 rounded-full" style={{ width: '18%' }}></div>
                   </div>
                 </div>
 
-                <div className="p-4 bg-gradient-to-r from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 rounded-lg">
+                <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Needs Support (&lt;60%)</p>
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">4 students</p>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="bg-red-600 dark:bg-red-400 h-2 rounded-full" style={{ width: '9%' }}></div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Improvement Rate</p>
-                      <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">+15%</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">avg score increase</p>
-                      <p className="text-sm font-semibold text-green-600 dark:text-green-400">month over month</p>
-                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Cohort Performance</p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">78.5%</p>
                   </div>
                 </div>
               </div>
