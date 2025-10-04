@@ -1,0 +1,260 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Download, RefreshCw, Building2 } from 'lucide-react';
+import { StatCards } from '../components/Organisation/StatCards';
+import { StudentsList } from '../components/Organisation/StudentsList';
+import { HeatMap } from '../components/Organisation/HeatMap';
+import { PerformanceChart } from '../components/Organisation/PerformanceChart';
+import { TopPerformers } from '../components/Organisation/TopPerformers';
+import { AreasOfImprovement } from '../components/Organisation/AreasOfImprovement';
+import { Button } from '../components/ui/Button';
+import {
+  OrganisationStats,
+  StudentPerformance,
+  PerformanceTrend,
+  HeatMapData,
+  ImprovementArea,
+} from '../types/organisationTypes';
+
+const OrganisationDashboard: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const stats: OrganisationStats = {
+    interviewsRemaining: 'unlimited',
+    interviewsPerStudent: 1,
+    totalStudents: 45,
+    averageOverallScore: 78.5,
+    averageAnswerScore: 82.3,
+    averageConfidence: 75.8,
+    averageQuestionsCompleted: 8.4,
+  };
+
+  const students: StudentPerformance[] = [
+    {
+      id: '1',
+      name: 'Aarav Sharma',
+      email: 'aarav.sharma@university.edu',
+      totalInterviews: 12,
+      completedInterviews: 12,
+      averageScore: 89.5,
+      averageConfidence: 85.2,
+      averageAnswerScore: 90.1,
+      averageQuestionsCompleted: 9.5,
+      lastInterviewDate: new Date('2025-10-03'),
+      improvementAreas: ['Technical Depth', 'Communication'],
+    },
+    {
+      id: '2',
+      name: 'Priya Patel',
+      email: 'priya.patel@university.edu',
+      totalInterviews: 10,
+      completedInterviews: 10,
+      averageScore: 87.2,
+      averageConfidence: 83.5,
+      averageAnswerScore: 88.7,
+      averageQuestionsCompleted: 9.2,
+      lastInterviewDate: new Date('2025-10-02'),
+      improvementAreas: ['Problem Solving', 'Time Management'],
+    },
+    {
+      id: '3',
+      name: 'Rohan Kumar',
+      email: 'rohan.kumar@university.edu',
+      totalInterviews: 9,
+      completedInterviews: 9,
+      averageScore: 85.8,
+      averageConfidence: 81.9,
+      averageAnswerScore: 86.4,
+      averageQuestionsCompleted: 8.9,
+      lastInterviewDate: new Date('2025-10-01'),
+      improvementAreas: ['Communication', 'Confidence'],
+    },
+    {
+      id: '4',
+      name: 'Ananya Singh',
+      email: 'ananya.singh@university.edu',
+      totalInterviews: 8,
+      completedInterviews: 8,
+      averageScore: 82.5,
+      averageConfidence: 79.3,
+      averageAnswerScore: 84.1,
+      averageQuestionsCompleted: 8.5,
+      lastInterviewDate: new Date('2025-09-30'),
+      improvementAreas: ['Technical Depth', 'Problem Solving'],
+    },
+    {
+      id: '5',
+      name: 'Vikram Reddy',
+      email: 'vikram.reddy@university.edu',
+      totalInterviews: 8,
+      completedInterviews: 8,
+      averageScore: 80.3,
+      averageConfidence: 77.8,
+      averageAnswerScore: 82.5,
+      averageQuestionsCompleted: 8.3,
+      lastInterviewDate: new Date('2025-09-29'),
+      improvementAreas: ['Confidence', 'Time Management'],
+    },
+    {
+      id: '6',
+      name: 'Ishita Gupta',
+      email: 'ishita.gupta@university.edu',
+      totalInterviews: 7,
+      completedInterviews: 7,
+      averageScore: 78.9,
+      averageConfidence: 76.2,
+      averageAnswerScore: 80.7,
+      averageQuestionsCompleted: 8.0,
+      lastInterviewDate: new Date('2025-09-28'),
+      improvementAreas: ['Communication', 'Technical Depth'],
+    },
+  ];
+
+  const performanceTrends: PerformanceTrend[] = [
+    { date: 'Sep 20', averageScore: 72.5, averageConfidence: 70.2, averageAnswerScore: 75.3, completedQuestions: 75 },
+    { date: 'Sep 23', averageScore: 74.8, averageConfidence: 72.5, averageAnswerScore: 77.1, completedQuestions: 78 },
+    { date: 'Sep 26', averageScore: 76.2, averageConfidence: 73.8, averageAnswerScore: 78.9, completedQuestions: 80 },
+    { date: 'Sep 29', averageScore: 77.5, averageConfidence: 74.9, averageAnswerScore: 80.2, completedQuestions: 82 },
+    { date: 'Oct 02', averageScore: 78.5, averageConfidence: 75.8, averageAnswerScore: 82.3, completedQuestions: 84 },
+  ];
+
+  const heatMapData: HeatMapData[] = Array.from({ length: 84 }, (_, i) => ({
+    date: new Date(2025, 7, i + 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    count: Math.floor(Math.random() * 10),
+    day: i % 7,
+    week: Math.floor(i / 7),
+  }));
+
+  const improvementAreas: ImprovementArea[] = [
+    { area: 'Communication Skills', count: 28, percentage: 62.2 },
+    { area: 'Technical Depth', count: 25, percentage: 55.6 },
+    { area: 'Problem Solving', count: 22, percentage: 48.9 },
+    { area: 'Confidence', count: 18, percentage: 40.0 },
+    { area: 'Time Management', count: 15, percentage: 33.3 },
+  ];
+
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  };
+
+  const handleExport = () => {
+    console.log('Exporting data...');
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="max-w-[1600px] mx-auto p-4 lg:p-8 space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <Building2 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                Organisation Dashboard
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                Monitor student performance and analytics
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1 sm:min-w-[300px]">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search students by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+
+              <Button
+                onClick={handleExport}
+                variant="primary"
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <StatCards stats={stats} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <TopPerformers students={filteredStudents.length > 0 ? filteredStudents : students} />
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <HeatMap data={heatMapData} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <AreasOfImprovement areas={improvementAreas} />
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <PerformanceChart data={performanceTrends} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <StudentsList students={filteredStudents.length > 0 ? filteredStudents : students} />
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default OrganisationDashboard;

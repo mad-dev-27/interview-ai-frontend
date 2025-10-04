@@ -8,6 +8,10 @@ import {
   Briefcase,
   ShoppingCart,
   CreditCard,
+  Shield,
+  Building2,
+  User as UserIcon,
+  FileText,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 
@@ -191,6 +195,34 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
           "No purchases yet — your payment history will appear here once you buy something!"
         ),
       // onClick: () => navigate("/payment-history"),
+    },
+    {
+      icon: Shield,
+      title: "Admin Dashboard",
+      description: "Manage users, system settings, and analytics",
+      action: "Coming soon",
+      onClick: () => {},
+    },
+    {
+      icon: Building2,
+      title: "Organisation Dashboard",
+      description: "Monitor team performance and manage organization resources",
+      action: "View Dashboard",
+      onClick: () => navigate("/organisation-dashboard"),
+    },
+    {
+      icon: UserIcon,
+      title: "Profile",
+      description: "View and update your personal information",
+      action: "Coming soon",
+      onClick: () => {},
+    },
+    {
+      icon: FileText,
+      title: "Resume Builder",
+      description: "AI-based resume builder, ATS checker and ATS friendly resume",
+      action: "Coming soon",
+      onClick: () => {},
     },
     {
       icon: MessageSquare,
