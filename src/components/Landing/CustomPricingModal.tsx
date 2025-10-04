@@ -29,7 +29,7 @@ export const CustomPricingModal: React.FC<CustomPricingModalProps> = ({
     setIsSubmitting(true);
 
     // Simulate form submission
-    const messagePromise = axios.post("https://verify.narendira.in/contact", {
+    const messagePromise = axios.post("https://verify.jobprepai.in/contact", {
       name: formData.name,
       email: formData.email,
       message: `

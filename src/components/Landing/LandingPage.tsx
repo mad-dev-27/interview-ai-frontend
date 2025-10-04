@@ -57,7 +57,7 @@ export const LandingPage: React.FC = () => {
   const setPricing = usePricingStore((state) => state.setPricing);
 
   useEffect(() => {
-    axios.get("https://verify.narendira.in/");
+    axios.get("https://verify.jobprepai.in/");
     axios
       .get(API_URL + "/user/pricing")
       .then((res) => setPricing(res.data.pricing));
