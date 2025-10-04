@@ -186,7 +186,11 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
       title: "Payment History",
       description: "Track your purchases and transaction history",
       action: "View Payments",
-      onClick: () => navigate("/payment-history"),
+      onClick: () =>
+        toast.info(
+          "No purchases yet — your payment history will appear here once you buy something!"
+        ),
+      // onClick: () => navigate("/payment-history"),
     },
     {
       icon: MessageSquare,
