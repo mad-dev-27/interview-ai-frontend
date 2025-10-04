@@ -196,13 +196,13 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
         ),
       // onClick: () => navigate("/payment-history"),
     },
-    {
-      icon: Shield,
-      title: "Admin Dashboard",
-      description: "Manage users, system settings, and analytics",
-      action: "Coming soon",
-      onClick: () => {},
-    },
+    // {
+    //   icon: Shield,
+    //   title: "Admin Dashboard",
+    //   description: "Manage users, system settings, and analytics",
+    //   action: "Coming soon",
+    //   onClick: () => {},
+    // },
     {
       icon: Building2,
       title: "Organisation Dashboard",
@@ -220,25 +220,26 @@ export const DashboardContent = ({ loading }: { loading: boolean }) => {
     {
       icon: FileText,
       title: "Resume Builder",
-      description: "AI-based resume builder, ATS checker and ATS friendly resume",
-      action: "Coming soon",
-      onClick: () => {},
-    },
-    {
-      icon: MessageSquare,
-      title: "Soft Skills Questions",
       description:
-        "Practice commonly asked behavioral and communication questions",
+        "AI-based resume builder, ATS checker and ATS friendly resume",
       action: "Coming soon",
       onClick: () => {},
     },
-    {
-      icon: Briefcase,
-      title: "Top Company Interview Questions",
-      description: "Practice commonly asked questions for your role",
-      action: "Coming soon",
-      onClick: () => {},
-    },
+    // {
+    //   icon: MessageSquare,
+    //   title: "Soft Skills Questions",
+    //   description:
+    //     "Practice commonly asked behavioral and communication questions",
+    //   action: "Coming soon",
+    //   onClick: () => {},
+    // },
+    // {
+    //   icon: Briefcase,
+    //   title: "Top Company Interview Questions",
+    //   description: "Practice commonly asked questions for your role",
+    //   action: "Coming soon",
+    //   onClick: () => {},
+    // },
   ];
 
   if (loading) {
