@@ -37,6 +37,7 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   const [disableAll, setDisableAll] = useState(false);
   const [isLoadingNextQuestion, setIsLoadingNextQuestion] = useState(false);
   const [showModal, setShowModal] = useState(true);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const enableProctorModeRef = useRef(false);
 
@@ -477,8 +478,14 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   };
 
   const handleExit = async () => {
+    setShowExitModal(true);
+  };
+
+  const confirmExit = async () => {
+    if (isRecording) {
+      await stopRecording();
+    }
     onComplete([]);
-    return;
   };
 
   const formatTime = (ms: number) => {
@@ -664,9 +671,10 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
                   <ArrowRight size={16} />
                 </Button>
 
-                <Button
+<Button
                   disabled={isLoadingNextQuestion || disableAll}
                   onClick={handleExit}
+                  variant="outline"
                   className="flex items-center space-x-2"
                 >
                   <span className="lg:text-md text-xs">Exit</span>
@@ -677,6 +685,55 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
           </AnimatePresence>
         </div>
       )}
+
+      {/* Exit Confirmation Modal */}
+      <AnimatePresence>
+        {showExitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowExitModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ArrowRight className="w-8 h-8 text-red-600 dark:text-red-400 transform rotate-180" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Are you sure you want to exit?
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  If you did not answer at least one question, the result page will not be generated and this will also count as an interview taken.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  onClick={() => setShowExitModal(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Continue Interview
+                </Button>
+                <Button
+                  onClick={confirmExit}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Exit Interview
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
