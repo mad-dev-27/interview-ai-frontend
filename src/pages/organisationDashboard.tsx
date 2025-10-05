@@ -314,18 +314,18 @@ const OrganisationDashboard: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full flex flex-col">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 Student Distribution
               </h2>
-              <div className="space-y-3">
+              <div className="flex-1 flex flex-col justify-center space-y-4">
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Excellent (80-100%)</p>
                     <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">18 students</p>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-emerald-600 dark:bg-emerald-400 h-2 rounded-full" style={{ width: '40%' }}></div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div className="bg-emerald-600 dark:bg-emerald-400 h-2.5 rounded-full" style={{ width: '40%' }}></div>
                   </div>
                 </div>
 
@@ -334,8 +334,8 @@ const OrganisationDashboard: React.FC = () => {
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Good (70-79%)</p>
                     <p className="text-lg font-bold text-blue-600 dark:text-blue-400">15 students</p>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full" style={{ width: '33%' }}></div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div className="bg-blue-600 dark:bg-blue-400 h-2.5 rounded-full" style={{ width: '33%' }}></div>
                   </div>
                 </div>
 
@@ -344,8 +344,8 @@ const OrganisationDashboard: React.FC = () => {
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Average (60-69%)</p>
                     <p className="text-lg font-bold text-amber-600 dark:text-amber-400">8 students</p>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-amber-600 dark:bg-amber-400 h-2 rounded-full" style={{ width: '18%' }}></div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div className="bg-amber-600 dark:bg-amber-400 h-2.5 rounded-full" style={{ width: '18%' }}></div>
                   </div>
                 </div>
 
@@ -354,12 +354,12 @@ const OrganisationDashboard: React.FC = () => {
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Needs Support (&lt;60%)</p>
                     <p className="text-lg font-bold text-red-600 dark:text-red-400">4 students</p>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-red-600 dark:bg-red-400 h-2 rounded-full" style={{ width: '9%' }}></div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div className="bg-red-600 dark:bg-red-400 h-2.5 rounded-full" style={{ width: '9%' }}></div>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="mt-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-600 dark:text-gray-400">Cohort Performance</p>
                     <p className="text-xl font-bold text-gray-900 dark:text-white">78.5%</p>

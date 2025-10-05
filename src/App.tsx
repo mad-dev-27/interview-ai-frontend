@@ -31,6 +31,7 @@ const MockInterviewSetup = lazy(
   () => import("./components/MockInterview/MockInterviewSetup")
 );
 const OrganisationDashboard = lazy(() => import("./pages/organisationDashboard"));
+const AdminDashboard = lazy(() => import("./pages/adminDashboard"));
 
 function AppContent() {
   return (
@@ -153,6 +154,15 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <OrganisationDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

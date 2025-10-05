@@ -63,42 +63,44 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col" style={{ minHeight: '500px', maxHeight: '500px' }}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Activity Calendar
-            </h2>
-            <div className="flex items-center gap-2 mt-1">
-              <button
-                onClick={handlePreviousMonth}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              </button>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px] text-center">
-                {monthName}
-              </p>
-              <button
-                onClick={handleNextMonth}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              </button>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg h-full flex flex-col overflow-visible" style={{ minHeight: '550px' }}>
+      <div className="p-6 pb-4">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Activity Calendar
+              </h2>
+              <div className="flex items-center gap-2 mt-1">
+                <button
+                  onClick={handlePreviousMonth}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </button>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px] text-center">
+                  {monthName}
+                </p>
+                <button
+                  onClick={handleNextMonth}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="text-right">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalInterviews}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">This Month</p>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalInterviews}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">This Month</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center overflow-hidden">
+      <div className="flex-1 px-6 pb-4 overflow-visible">
         <div className="w-full">
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="grid grid-cols-7 gap-2 mb-3">
             {days.map((day) => (
               <div
                 key={day}
@@ -109,12 +111,12 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
             ))}
           </div>
 
-          <div className="grid gap-2" style={{ minHeight: '336px', maxHeight: '336px' }}>
+          <div className="grid gap-2 mb-4">
             {weeksArray.slice(0, 6).map((week, weekIndex) => (
               <div key={weekIndex} className="grid grid-cols-7 gap-2">
                 {week.map((day, dayIndex) => {
                   if (day === null) {
-                    return <div key={`empty-${weekIndex}-${dayIndex}`} className="w-full h-12" />;
+                    return <div key={`empty-${weekIndex}-${dayIndex}`} className="w-full h-11" />;
                   }
 
                   const cellData = data.find(d => d.dayOfMonth === day);
@@ -128,7 +130,7 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: day * 0.01 }}
                       whileHover={{ scale: 1.05 }}
-                      className={`w-full h-12 rounded-lg border-2 ${getIntensityColor(count)} cursor-pointer transition-all relative flex items-center justify-center`}
+                      className={`w-full h-11 rounded-lg border-2 ${getIntensityColor(count)} cursor-pointer transition-all relative flex items-center justify-center`}
                       onMouseEnter={() => setHoveredCell({ day })}
                       onMouseLeave={() => setHoveredCell(null)}
                     >
@@ -139,7 +141,7 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none z-50"
+                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none z-[100]"
                         >
                           <div className="font-semibold">{cellData ? cellData.date : 'No data'}</div>
                           <div className="text-gray-300">{count} interviews</div>
@@ -154,22 +156,24 @@ export const HeatMap: React.FC<HeatMapProps> = ({ generateMonthData }) => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
 
-          <div className="flex items-center justify-center gap-3 mt-6 text-xs text-gray-600 dark:text-gray-400">
-            <span className="font-medium">Less</span>
-            <div className="flex gap-1.5">
-              {[0, 2, 4, 6, 8].map((val) => (
-                <div
-                  key={val}
-                  className={`w-5 h-5 rounded-md border-2 ${getIntensityColor(val)}`}
-                />
-              ))}
-            </div>
-            <span className="font-medium">More</span>
-            <span className="ml-3 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-700 dark:text-gray-300 font-medium">
-              Peak: {maxCount}
-            </span>
+      <div className="px-6 pb-6">
+        <div className="flex items-center justify-center gap-3 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
+          <span className="font-medium">Less</span>
+          <div className="flex gap-1.5">
+            {[0, 2, 4, 6, 8].map((val) => (
+              <div
+                key={val}
+                className={`w-5 h-5 rounded-md border-2 ${getIntensityColor(val)}`}
+              />
+            ))}
           </div>
+          <span className="font-medium">More</span>
+          <span className="ml-3 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-700 dark:text-gray-300 font-medium">
+            Peak: {maxCount}
+          </span>
         </div>
       </div>
     </div>
