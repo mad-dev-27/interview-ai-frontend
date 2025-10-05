@@ -74,9 +74,9 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg h-full flex flex-col">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             Performance Trends
@@ -88,23 +88,23 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
             <button
               key={metric.key}
               onClick={() => toggleMetric(metric.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-2 ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-2 ${
                 selectedMetrics.includes(metric.key)
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-md'
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-gray-900 dark:text-white shadow-sm ring-2 ring-blue-500/20'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               <div
-                className="w-2 h-2 rounded-full"
+                className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: metric.color }}
               ></div>
-              {metric.label}
+              <span className="whitespace-nowrap">{metric.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="flex-1 overflow-x-auto">
         <svg
           width={chartWidth}
           height={chartHeight}
