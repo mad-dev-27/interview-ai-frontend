@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2, CheckCircle, AlertTriangle, Headphones, Volume, Speaker } from "lucide-react";
@@ -9,52 +9,82 @@ const MicSetupModal: React.FC<{ onContinue: () => void }> = ({ onContinue }) => 
   const [isTestingMic, setIsTestingMic] = useState(false);
   const [hasSpoken, setHasSpoken] = useState(false);
 
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
   const requestPermission = async () => {
     try {
+      // Clean up existing stream and context first
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (stream) {
+        streamRef.current = stream;
         setPermissionGranted(true);
         setIsTestingMic(true);
 
         const audioContext = new AudioContext();
+        audioContextRef.current = audioContext;
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.8;
         source.connect(analyser);
 
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        const dataArray = new Uint8Array(analyser.fftSize);
 
         const checkLevel = () => {
-          analyser.getByteFrequencyData(dataArray);
-          let values = 0;
-          for (let i = 0; i < dataArray.length; i++) {
-            values += dataArray[i];
-          }
-          const average = values / dataArray.length;
-          setMicLevel(Math.round(average));
+          analyser.getByteTimeDomainData(dataArray);
 
-          if (average > 10) {
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const normalized = (dataArray[i] - 128) / 128;
+            sum += normalized * normalized;
+          }
+          const rms = Math.sqrt(sum / dataArray.length);
+          const db = 20 * Math.log10(rms + 0.0001);
+          const normalizedLevel = Math.max(0, Math.min(100, (db + 60) * 1.67));
+
+          setMicLevel(Math.round(normalizedLevel));
+
+          if (normalizedLevel > 1) {
             setHasSpoken(true);
           }
 
-          if (isTestingMic) {
-            requestAnimationFrame(checkLevel);
-          }
+          animationFrameRef.current = requestAnimationFrame(checkLevel);
         };
 
         checkLevel();
-
-        setTimeout(() => {
-          stream.getTracks().forEach(track => track.stop());
-          audioContext.close();
-          setIsTestingMic(false);
-        }, 15000);
       }
     } catch (err) {
       console.error("Mic permission denied:", err);
       setPermissionGranted(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
   const getBarColor = () => {
     if (micLevel < 20) return "bg-gray-400";
@@ -127,7 +157,7 @@ const MicSetupModal: React.FC<{ onContinue: () => void }> = ({ onContinue }) => 
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      {micLevel > 10 ? (
+                      {micLevel > 1 ? (
                         <div className="flex items-center space-x-2">
                           <Volume2 className="w-5 h-5 text-green-500 animate-pulse" />
                           <span className="text-sm font-medium text-green-600 dark:text-green-400">Mic Active</span>
@@ -226,7 +256,7 @@ const MicSetupModal: React.FC<{ onContinue: () => void }> = ({ onContinue }) => 
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 space-y-3">
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -244,13 +274,33 @@ const MicSetupModal: React.FC<{ onContinue: () => void }> = ({ onContinue }) => 
              "Start Interview"}
           </motion.button>
 
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            onClick={onContinue}
+            className="w-full py-3 rounded-xl font-medium text-base transition-all duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+          >
+            Proceed Without Audio Test
+          </motion.button>
+
           {permissionGranted && hasSpoken && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center text-sm text-gray-600 dark:text-gray-400 mt-3"
+              className="text-center text-sm text-gray-600 dark:text-gray-400"
             >
               Your microphone is ready!
+            </motion.p>
+          )}
+
+          {!permissionGranted && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center text-xs text-gray-500 dark:text-gray-400"
+            >
+              Note: Audio recording may not work without microphone permission
             </motion.p>
           )}
         </div>

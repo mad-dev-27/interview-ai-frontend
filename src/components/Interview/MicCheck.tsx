@@ -10,30 +10,37 @@ export const MicChecker: React.FC = () => {
     let analyser: AnalyserNode | null = null;
     let dataArray: Uint8Array;
     let rafId: number;
+    let stream: MediaStream | null = null;
 
     const start = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
         audioContext = new AudioContext();
         const source = audioContext.createMediaStreamSource(stream);
         analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.8;
         source.connect(analyser);
 
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        dataArray = new Uint8Array(analyser.fftSize);
 
         const tick = () => {
           if (!analyser) return;
-          analyser.getByteFrequencyData(dataArray);
-          let values = 0;
+          analyser.getByteTimeDomainData(dataArray);
+
+          let sum = 0;
           for (let i = 0; i < dataArray.length; i++) {
-            values += dataArray[i];
+            const normalized = (dataArray[i] - 128) / 128;
+            sum += normalized * normalized;
           }
-          const average = values / dataArray.length;
-          setLevel(Math.round(average));
-          if (average > 0) {
+          const rms = Math.sqrt(sum / dataArray.length);
+          const db = 20 * Math.log10(rms + 0.0001);
+          const normalizedLevel = Math.max(0, Math.min(100, (db + 60) * 1.67));
+
+          setLevel(Math.round(normalizedLevel));
+          if (normalizedLevel > 1) {
             setIsActive(true);
           }
           rafId = requestAnimationFrame(tick);
@@ -49,6 +56,9 @@ export const MicChecker: React.FC = () => {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
       if (audioContext) audioContext.close();
     };
   }, []);
