@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { useUserStore } from "../store/userStore";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumb } from "../components/ui/Breadcrumb";
 
 interface PaymentRecord {
   id: string;
@@ -144,6 +146,9 @@ const PaymentHistory: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-6xl mx-auto w-full"
           >
+            <BackButton to="/dashboard" label="Back to Dashboard" />
+            <Breadcrumb items={[{ label: "Payment History" }]} />
+
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Payment History

@@ -6,6 +6,8 @@ import { Calendar, Clock, Eye, FileText } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { useUserStore } from "../store/userStore";
 import { useNavigate } from "react-router-dom";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumb } from "../components/ui/Breadcrumb";
 
 const InterviewHistory: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -87,6 +89,9 @@ const InterviewHistory: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-6xl mx-auto w-full"
           >
+            <BackButton to="/dashboard" label="Back to Dashboard" />
+            <Breadcrumb items={[{ label: "Interview History" }]} />
+
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Interview History

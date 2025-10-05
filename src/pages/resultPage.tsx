@@ -11,6 +11,8 @@ import {
   OverallFeedback,
   QuestionFeedback,
 } from "../types/resultPageTypes";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumb } from "../components/ui/Breadcrumb";
 
 const ResultPage = () => {
   const [overallFeedback, setOverallFeedback] =

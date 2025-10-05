@@ -20,6 +20,8 @@ import {
 import { Button } from "../ui/Button";
 import { useNavigate } from "react-router-dom";
 import { OverallFeedback, QuestionFeedback } from "../../types/resultPageTypes";
+import { BackButton } from "../ui/BackButton";
+import { Breadcrumb } from "../ui/Breadcrumb";
 
 const ResultContent = ({
   overallFeedback,
@@ -32,6 +34,12 @@ const ResultContent = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 py-8">
       <div className="max-w-6xl mx-auto px-4">
+        <BackButton to="/dashboard" label="Back to Dashboard" />
+        <Breadcrumb items={[
+          { label: "Interview History", path: "/interview-history" },
+          { label: "Results" }
+        ]} />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

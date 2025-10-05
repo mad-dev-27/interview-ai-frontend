@@ -9,6 +9,8 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { useQuestionStore } from "../../store/interviewStore";
 import InterviewRulesModal from "./agreeModal";
+import { BackButton } from "../ui/BackButton";
+import { Breadcrumb } from "../ui/Breadcrumb";
 
 const MockInterviewSetup: React.FC = () => {
   const [jobDescription, setJobDescription] = useState("");
@@ -167,6 +169,9 @@ const MockInterviewSetup: React.FC = () => {
       </div>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 py-8">
         <div className="max-w-4xl mx-auto px-4">
+          <BackButton to="/dashboard" label="Back to Dashboard" />
+          <Breadcrumb items={[{ label: "Mock Interview Setup" }]} />
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
