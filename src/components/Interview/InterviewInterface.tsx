@@ -502,53 +502,14 @@ export const InterviewInterface: React.FC<InterviewInterfaceProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
       {!setupFullScreen ? (
-        <div className="flex flex-col h-screen justify-between px-6 py-6 md:py-8">
-          {/* Top Section */}
-          <div className="flex gap-4 items-center text-sm md:text-base">
-            <Clock className="text-black dark:text-white" size={18} />
-            <p className="text-black dark:text-white">Time Left</p>
-            <span className="font-medium text-black dark:text-white">
-              {formatTime(timeSpent)}
-            </span>
-          </div>
-
-          {/* Middle Section */}
-          <div className="flex flex-col justify-center items-center gap-6 flex-grow">
-            {showModal && (
-              <MicSetupModal onContinue={() => setShowModal(false)} />
-            )}
-            {!showModal && (
-              <p className="text-black dark:text-white text-lg font-medium text-center">
-                Please make sure your microphone is working before starting.
-              </p>
-            )}
-
-            <MicChecker />
-            {/* Instructions */}
-            <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-800 rounded-xl shadow-md p-4 text-sm md:text-base text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-              <h2 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Instructions
-              </h2>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Find a quiet environment with minimal background noise.</li>
-                <li>
-                  Ensure your microphone is connected and working properly.
-                </li>
-                <li>Be ready to answer questions as naturally as possible.</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom Section */}
-          <div className="flex justify-center pb-4 w-full">
-            <Button
-              onClick={enableSafeMode}
-              className="px-8 py-3 w-full sm:w-2/3 md:w-1/3 lg:w-1/4 text-lg font-semibold rounded-xl shadow-md"
-            >
-              Start Interview
-            </Button>
-          </div>
-        </div>
+        <>
+          {showModal && (
+            <MicSetupModal onContinue={() => {
+              setShowModal(false);
+              enableSafeMode();
+            }} />
+          )}
+        </>
       ) : (
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Progress Bar */}

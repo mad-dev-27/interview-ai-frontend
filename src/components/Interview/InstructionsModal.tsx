@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2, CheckCircle, AlertTriangle, Headphones, Volume, Speaker } from "lucide-react";
@@ -9,14 +9,31 @@ const MicSetupModal: React.FC<{ onContinue: () => void }> = ({ onContinue }) => 
   const [isTestingMic, setIsTestingMic] = useState(false);
   const [hasSpoken, setHasSpoken] = useState(false);
 
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
   const requestPermission = async () => {
     try {
+      // Clean up existing stream and context first
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (stream) {
+        streamRef.current = stream;
         setPermissionGranted(true);
         setIsTestingMic(true);
 
         const audioContext = new AudioContext();
+        audioContextRef.current = audioContext;
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 512;
@@ -43,24 +60,31 @@ const MicSetupModal: React.FC<{ onContinue: () => void }> = ({ onContinue }) => 
             setHasSpoken(true);
           }
 
-          if (isTestingMic) {
-            requestAnimationFrame(checkLevel);
-          }
+          animationFrameRef.current = requestAnimationFrame(checkLevel);
         };
 
         checkLevel();
-
-        setTimeout(() => {
-          stream.getTracks().forEach(track => track.stop());
-          audioContext.close();
-          setIsTestingMic(false);
-        }, 15000);
       }
     } catch (err) {
       console.error("Mic permission denied:", err);
       setPermissionGranted(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
   const getBarColor = () => {
     if (micLevel < 20) return "bg-gray-400";
