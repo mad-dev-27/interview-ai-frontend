@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, DollarSign } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, DollarSign } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { toast } from 'sonner';
 
