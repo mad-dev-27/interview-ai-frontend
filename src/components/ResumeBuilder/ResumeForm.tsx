@@ -45,7 +45,7 @@ export function ResumeForm() {
         >
           <button
             onClick={() => toggleSection(section.id)}
-            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+            className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-t-lg"
           >
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {section.title}
@@ -58,7 +58,7 @@ export function ResumeForm() {
           </button>
 
           {expandedSections.has(section.id) && (
-            <div className="px-6 pb-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-200 dark:border-gray-700">
               {section.component}
             </div>
           )}
