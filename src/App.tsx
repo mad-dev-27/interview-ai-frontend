@@ -32,6 +32,7 @@ const MockInterviewSetup = lazy(
 );
 const OrganisationDashboard = lazy(() => import("./pages/organisationDashboard"));
 const AdminDashboard = lazy(() => import("./pages/adminDashboard"));
+const ResumeBuilder = lazy(() => import("./pages/resumeBuilder"));
 
 function AppContent() {
   return (
@@ -163,6 +164,15 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/resume-builder"
+          element={
+            <ProtectedRoute>
+              <ResumeBuilder />
             </ProtectedRoute>
           }
         />
